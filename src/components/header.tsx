@@ -97,10 +97,6 @@ export default function Header() {
               <DropdownMenuContent>
                 <DropdownMenuLabel>Switch Role</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => setUserType('buyer')}>
-                    <ShoppingCart className="mr-2 h-4 w-4" />
-                    <span>Buyer</span>
-                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setUserType('farmer')}>
                     <HelpingHand className="mr-2 h-4 w-4" />
                     <span>Farmer</span>
