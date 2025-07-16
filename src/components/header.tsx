@@ -80,7 +80,7 @@ export default function Header() {
           <div className="md:hidden">
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="outline" size="icon">
+                <Button variant="outline" size="icon" suppressHydrationWarning>
                   <Menu className="h-5 w-5" />
                   <span className="sr-only">Toggle navigation menu</span>
                 </Button>
@@ -102,7 +102,7 @@ export default function Header() {
                       {link.label}
                     </Link>
                   ))}
-                   <Button onClick={handleLogout} variant="outline" className="mt-4">
+                   <Button onClick={handleLogout} variant="outline" className="mt-4" suppressHydrationWarning>
                         <LogOut className="mr-2 h-4 w-4" />
                         <span>Logout</span>
                     </Button>
@@ -110,7 +110,7 @@ export default function Header() {
               </SheetContent>
             </Sheet>
           </div>
-           <Button onClick={handleLogout} variant="outline" size="sm" className="hidden md:inline-flex">
+           <Button onClick={handleLogout} variant="outline" size="sm" className="hidden md:inline-flex" suppressHydrationWarning>
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Logout</span>
             </Button>
