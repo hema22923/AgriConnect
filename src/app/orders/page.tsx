@@ -1,3 +1,4 @@
+
 import { orders } from '@/lib/data';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -28,7 +29,7 @@ export default function OrdersPage() {
                 <div className="space-y-4">
                   {order.items.map(item => (
                     <div key={item.product.id} className="flex justify-between items-center">
-                      <p>{item.product.name} <span className="text-muted-foreground">x {item.quantity}</span></p>
+                      <p>{item.product.name} <span className="text-muted-foreground">x {item.quantity} kg</span></p>
                       <p className="font-semibold">${(item.product.price * item.quantity).toFixed(2)}</p>
                     </div>
                   ))}

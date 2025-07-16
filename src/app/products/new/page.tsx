@@ -50,7 +50,7 @@ export default function NewProductPage() {
         const name = formData.get('name') as string;
         const description = formData.get('description') as string;
         const price = parseFloat(formData.get('price') as string);
-        const stock = parseInt(formData.get('stock') as string, 10);
+        const stock = parseFloat(formData.get('stock') as string);
         const aiHint = formData.get('aiHint') as string || 'fresh produce';
 
         // In a real app, you would upload the image to a storage service (like Firebase Storage)
@@ -104,12 +104,12 @@ export default function NewProductPage() {
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                              <div className="space-y-2">
-                                <Label htmlFor="price">Price ($)</Label>
+                                <Label htmlFor="price">Price (per Kg)</Label>
                                 <Input id="price" name="price" type="number" step="0.01" placeholder="e.g., 5.99" required suppressHydrationWarning/>
                             </div>
                              <div className="space-y-2">
-                                <Label htmlFor="stock">Stock Quantity</Label>
-                                <Input id="stock" name="stock" type="number" step="1" placeholder="e.g., 100" required suppressHydrationWarning/>
+                                <Label htmlFor="stock">Stock Quantity (in Kg)</Label>
+                                <Input id="stock" name="stock" type="number" step="0.1" placeholder="e.g., 50.5" required suppressHydrationWarning/>
                             </div>
                         </div>
                          <div className="space-y-2">

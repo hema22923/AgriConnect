@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useCart } from '@/context/cart-context';
@@ -33,14 +34,14 @@ export default function CartPage() {
                       <div className="flex-1">
                         <h3 className="font-semibold text-lg">{item.product.name}</h3>
                         <p className="text-sm text-muted-foreground">{item.product.seller}</p>
-                        <p className="font-bold text-primary mt-1">${item.product.price.toFixed(2)}</p>
+                        <p className="font-bold text-primary mt-1">${item.product.price.toFixed(2)} / kg</p>
                       </div>
                       <div className="flex flex-col items-end gap-2">
                          <div className="flex items-center gap-2">
                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => updateQuantity(item.product.id, item.quantity - 1)}>
                                <MinusCircle className="h-5 w-5"/>
                            </Button>
-                           <span className="font-bold w-4 text-center">{item.quantity}</span>
+                           <span className="font-bold w-12 text-center">{item.quantity} kg</span>
                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => updateQuantity(item.product.id, item.quantity + 1)}>
                                <PlusCircle className="h-5 w-5"/>
                            </Button>

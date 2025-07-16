@@ -1,3 +1,4 @@
+
 import { orders, products } from '@/lib/data';
 import { notFound } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -41,7 +42,7 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
                       />
                       <div className="flex-1">
                         <p className="font-semibold">{item.product.name}</p>
-                        <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>
+                        <p className="text-sm text-muted-foreground">{item.quantity} kg</p>
                       </div>
                       <p className="font-semibold">${(item.product.price * item.quantity).toFixed(2)}</p>
                     </div>

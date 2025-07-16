@@ -18,10 +18,17 @@ import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 
 export default function ProfilePage() {
-    const { userName, uid } = useUser();
+    const { userName, uid, setUserType, setUserName: setGlobalUserName } = useUser();
     const router = useRouter();
     const [farmerProducts, setFarmerProducts] = useState<Product[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+
+    const handleLogout = async () => {
+        await signOut(auth);
+        setGlobalUserName('Guest');
+        setUserType('buyer');
+        router.push('/login');
+    };
 
     useEffect(() => {
         const loadProducts = async () => {
@@ -143,9 +150,9 @@ export default function ProfilePage() {
                                     <Image src={product.image} alt={product.name} width={60} height={60} className="rounded-md object-cover" data-ai-hint={product.aiHint}/>
                                     <div className="flex-1">
                                         <p className="font-semibold">{product.name}</p>
-                                        <p className="text-sm text-muted-foreground">${product.price.toFixed(2)}</p>
+                                        <p className="text-sm text-muted-foreground">${product.price.toFixed(2)} / kg</p>
                                         {product.stock > 0 ? (
-                                            <p className="text-xs text-muted-foreground">{product.stock} in stock</p>
+                                            <p className="text-xs text-muted-foreground">{product.stock} kg in stock</p>
                                         ) : (
                                             <Badge variant="destructive" className="text-xs">Out of Stock</Badge>
                                         )}

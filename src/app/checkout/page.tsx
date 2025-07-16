@@ -124,7 +124,7 @@ export default function CheckoutPage() {
               <CardContent className="space-y-2">
                 {cart.map(item => (
                     <div key={item.product.id} className="flex justify-between items-center text-sm">
-                        <span className="text-muted-foreground truncate pr-2">{item.product.name} x{item.quantity}</span>
+                        <span className="text-muted-foreground truncate pr-2">{item.product.name} ({item.quantity} kg)</span>
                         <span>${(item.product.price * item.quantity).toFixed(2)}</span>
                     </div>
                 ))}

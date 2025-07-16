@@ -1,3 +1,4 @@
+
 'use client';
 
 import { ShoppingCart, MinusCircle, PlusCircle, Trash2 } from 'lucide-react';
@@ -56,7 +57,7 @@ export default function CartButton() {
                       <h5 className="font-medium">{item.product.name}</h5>
                       <div className="flex items-center justify-between">
                          <p className="text-sm text-muted-foreground">
-                            ${item.product.price.toFixed(2)}
+                            ${item.product.price.toFixed(2)} / kg
                          </p>
                          <div className="flex items-center gap-2">
                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => updateQuantity(item.product.id, item.quantity - 1)}>

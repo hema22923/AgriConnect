@@ -91,7 +91,7 @@ export default function EditProductPage() {
         const name = formData.get('name') as string;
         const description = formData.get('description') as string;
         const price = parseFloat(formData.get('price') as string);
-        const stock = parseInt(formData.get('stock') as string, 10);
+        const stock = parseFloat(formData.get('stock') as string);
         const aiHint = formData.get('aiHint') as string;
         const image = imagePreview || product.image;
 
@@ -202,12 +202,12 @@ export default function EditProductPage() {
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                              <div className="space-y-2">
-                                <Label htmlFor="price">Price ($)</Label>
+                                <Label htmlFor="price">Price (per Kg)</Label>
                                 <Input id="price" name="price" type="number" step="0.01" defaultValue={product.price} required />
                             </div>
                              <div className="space-y-2">
-                                <Label htmlFor="stock">Stock Quantity</Label>
-                                <Input id="stock" name="stock" type="number" step="1" defaultValue={product.stock} required />
+                                <Label htmlFor="stock">Stock Quantity (in Kg)</Label>
+                                <Input id="stock" name="stock" type="number" step="0.1" defaultValue={product.stock} required />
                             </div>
                         </div>
                          <div className="space-y-2">
