@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { fetchProducts } from "@/lib/data"
 import type { Product } from '@/lib/types'
 import Image from "next/image"
-import { Edit, PlusCircle, Package, LogOut } from "lucide-react"
+import { Edit, PlusCircle, Package, LogOut, ShoppingCart } from "lucide-react"
 import { useUser } from "@/context/user-context";
 import { useEffect, useState } from "react"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -63,6 +63,37 @@ export default function ProfilePage() {
                         Logout
                     </Button>
                 </div>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                        <CardTitle className="text-sm font-medium">
+                            Total Orders
+                        </CardTitle>
+                        <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">5</div>
+                        <p className="text-xs text-muted-foreground">
+                            Based on buyer purchases
+                        </p>
+                    </CardContent>
+                </Card>
+                 <Card>
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                        <CardTitle className="text-sm font-medium">
+                            Listed Products
+                        </CardTitle>
+                        <Package className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{farmerProducts.length}</div>
+                        <p className="text-xs text-muted-foreground">
+                            Currently available for sale
+                        </p>
+                    </CardContent>
+                </Card>
             </div>
 
             <Card>
