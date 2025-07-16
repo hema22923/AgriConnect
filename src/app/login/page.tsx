@@ -17,43 +17,52 @@ import { Leaf } from "lucide-react";
 import Link from "next/link";
 import { useUser } from '@/context/user-context';
 import { useToast } from '@/hooks/use-toast';
-import { auth } from '@/lib/firebase';
+import { auth, db } from '@/lib/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { FirebaseError } from 'firebase/app';
+import { doc, getDoc } from 'firebase/firestore';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { userType, userName, isLoading } = useUser();
+  const { userType, userName, isLoading, setUserType, setUserName } = useUser();
   const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
-    // This effect runs when the user context is loaded or changes.
-    // If the user is successfully logged in, redirect them.
-    if (!isLoading && userName !== 'Guest') {
-      toast({
-        title: 'Login Successful',
-        description: `Welcome back, ${userName}!`,
-      });
-
-      if (userType === 'farmer') {
-        router.push('/profile');
-      } else if (userType === 'admin') {
-        router.push('/admin');
-      } else {
-        router.push('/');
-      }
-    }
-  }, [userType, userName, isLoading, router]);
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      // The useEffect hook will handle redirection and success toast.
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // Fetch user role from Firestore
+      const userDocRef = doc(db, 'users', user.uid);
+      const userDoc = await getDoc(userDocRef);
+      
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        // Manually update context to ensure redirection logic has the correct userType
+        setUserType(userData.role);
+        setUserName(userData.fullName);
+        
+        toast({
+          title: 'Login Successful',
+          description: `Welcome back, ${userData.fullName}!`,
+        });
+
+        if (userData.role === 'farmer') {
+          router.push('/profile');
+        } else if (userData.role === 'admin') {
+          router.push('/admin');
+        } else {
+          router.push('/');
+        }
+      } else {
+         throw new Error("User document not found in Firestore.");
+      }
+
     } catch (error: any) {
        console.error("Login Error:", error);
        let errorMessage = 'An unexpected error occurred.';
@@ -61,7 +70,7 @@ export default function LoginPage() {
          if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
             errorMessage = 'Invalid email or password. Please try again.';
          } else if (error.code === 'unavailable' || error.code === 'auth/network-request-failed') {
-            errorMessage = 'Failed to connect to the database. Please check your internet connection and try again.';
+            errorMessage = 'Failed to connect. Please check your internet connection.';
          }
        }
        toast({
