@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -9,6 +10,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { CheckCircle, Loader2 } from 'lucide-react';
+import { db } from '@/lib/firebase';
+import { doc, updateDoc, increment } from 'firebase/firestore';
 
 export default function CheckoutPage() {
   const { cart, cartTotal, clearCart } = useCart();
@@ -17,7 +20,7 @@ export default function CheckoutPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isOrderPlaced, setIsOrderPlaced] = useState(false);
 
-  const handlePlaceOrder = (e: React.FormEvent) => {
+  const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     if (cart.length === 0) {
       toast({
@@ -29,16 +32,38 @@ export default function CheckoutPage() {
     }
 
     setIsProcessing(true);
-    // Simulate API call
-    setTimeout(() => {
+    
+    // In a real app, you would save the order to a database here
+    // And also update the stock
+    try {
+      // Create a batch write to update all product stocks atomically
+      for (const item of cart) {
+        const productRef = doc(db, 'products', item.product.id);
+        await updateDoc(productRef, {
+          stock: increment(-item.quantity),
+        });
+      }
+
+      // Simulate API call for order processing
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
       setIsProcessing(false);
       setIsOrderPlaced(true);
-      // In a real app, you would save the order to a database here
       clearCart();
+      
       setTimeout(() => {
         router.push('/orders');
       }, 2000);
-    }, 1500);
+
+    } catch (error) {
+       console.error("Order processing failed: ", error);
+       toast({
+        title: "Order Failed",
+        description: "There was an issue processing your order. Please try again.",
+        variant: "destructive"
+       });
+       setIsProcessing(false);
+    }
   };
 
   if (isOrderPlaced) {

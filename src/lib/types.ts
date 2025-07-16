@@ -8,6 +8,7 @@ export type Product = {
   image: string;
   seller: string;
   aiHint: string;
+  stock: number;
 };
 
 export type CartItem = {

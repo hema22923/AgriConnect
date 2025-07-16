@@ -8,13 +8,17 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { fetchProducts, orders } from "@/lib/data"
 import type { Product } from '@/lib/types'
 import Image from "next/image"
-import { Edit, PlusCircle, Package, ShoppingCart, DollarSign } from "lucide-react"
+import { Edit, PlusCircle, Package, ShoppingCart, DollarSign, LogOut } from "lucide-react"
 import { useUser } from "@/context/user-context";
 import { useEffect, useState, useMemo } from "react"
 import { Skeleton } from "@/components/ui/skeleton"
+import { auth } from "@/lib/firebase";
+import { signOut } from "firebase/auth";
+import { useRouter } from "next/navigation";
 
 export default function ProfilePage() {
     const { userName, uid } = useUser();
+    const router = useRouter();
     const [farmerProducts, setFarmerProducts] = useState<Product[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -139,6 +143,7 @@ export default function ProfilePage() {
                                     <div className="flex-1">
                                         <p className="font-semibold">{product.name}</p>
                                         <p className="text-sm text-muted-foreground">${product.price.toFixed(2)}</p>
+                                        <p className="text-xs text-muted-foreground">{product.stock} in stock</p>
                                     </div>
                                     <Button variant="outline" size="sm">Edit</Button>
                                 </div>

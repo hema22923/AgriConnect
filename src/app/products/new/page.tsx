@@ -50,6 +50,7 @@ export default function NewProductPage() {
         const name = formData.get('name') as string;
         const description = formData.get('description') as string;
         const price = parseFloat(formData.get('price') as string);
+        const stock = parseInt(formData.get('stock') as string, 10);
         const aiHint = formData.get('aiHint') as string || 'fresh produce';
 
         // In a real app, you would upload the image to a storage service (like Firebase Storage)
@@ -61,6 +62,7 @@ export default function NewProductPage() {
             name,
             description,
             price,
+            stock,
             image: imageUrl,
             seller: userName,
             aiHint,
@@ -106,9 +108,13 @@ export default function NewProductPage() {
                                 <Input id="price" name="price" type="number" step="0.01" placeholder="e.g., 5.99" required suppressHydrationWarning/>
                             </div>
                              <div className="space-y-2">
-                                <Label htmlFor="aiHint">Image AI Hint</Label>
-                                <Input id="aiHint" name="aiHint" placeholder="e.g., fresh strawberries" required suppressHydrationWarning/>
+                                <Label htmlFor="stock">Stock Quantity</Label>
+                                <Input id="stock" name="stock" type="number" step="1" placeholder="e.g., 100" required suppressHydrationWarning/>
                             </div>
+                        </div>
+                         <div className="space-y-2">
+                            <Label htmlFor="aiHint">Image AI Hint</Label>
+                            <Input id="aiHint" name="aiHint" placeholder="e.g., fresh strawberries" required suppressHydrationWarning/>
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="image">Product Image</Label>

@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
@@ -21,8 +22,35 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const { toast } = useToast();
 
   const addToCart = (product: Product, quantity: number = 1) => {
+    if (product.stock <= 0) {
+      toast({
+        title: "Out of Stock",
+        description: `${product.name} is currently unavailable.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     setCart((prevCart) => {
       const existingItem = prevCart.find((item) => item.product.id === product.id);
+      
+      const newQuantity = (existingItem ? existingItem.quantity : 0) + quantity;
+
+      if (newQuantity > product.stock) {
+        toast({
+          title: "Limited Stock",
+          description: `You can only add up to ${product.stock} of ${product.name}.`,
+          variant: "destructive",
+        });
+        // Adjust quantity to max stock if they try to add more
+        if (existingItem) {
+          return prevCart.map(item =>
+            item.product.id === product.id ? { ...item, quantity: product.stock } : item
+          );
+        }
+        return [...prevCart, { product, quantity: product.stock }];
+      }
+
       if (existingItem) {
         return prevCart.map((item) =>
           item.product.id === product.id
@@ -32,10 +60,13 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       }
       return [...prevCart, { product, quantity }];
     });
-    toast({
-      title: "Added to cart",
-      description: `${product.name} has been added to your cart.`,
-    });
+
+    if (newQuantity <= product.stock) {
+        toast({
+            title: "Added to cart",
+            description: `${product.name} has been added to your cart.`,
+        });
+    }
   };
 
   const removeFromCart = (productId: string) => {
@@ -48,6 +79,23 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const updateQuantity = (productId: string, quantity: number) => {
+    const itemInCart = cart.find(item => item.product.id === productId);
+    if (!itemInCart) return;
+
+    if (quantity > itemInCart.product.stock) {
+      toast({
+          title: "Limited Stock",
+          description: `Only ${itemInCart.product.stock} of ${itemInCart.product.name} available.`,
+          variant: "destructive",
+      });
+      setCart((prevCart) =>
+        prevCart.map((item) =>
+          item.product.id === productId ? { ...item, quantity: itemInCart.product.stock } : item
+        )
+      );
+      return;
+    }
+
     if (quantity <= 0) {
       removeFromCart(productId);
       return;
