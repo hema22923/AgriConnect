@@ -10,16 +10,7 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet';
 import { useUser, UserType } from '@/context/user-context';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import { useRouter } from 'next/navigation';
-import CartButton from './cart-button';
 
 
 const buyerLinks = [
@@ -86,33 +77,6 @@ export default function Header() {
         </nav>
 
         <div className="flex items-center gap-4">
-            {userType === 'buyer' && <CartButton suppressHydrationWarning />}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className='capitalize' suppressHydrationWarning>
-                    <User className="mr-2 h-4 w-4" />
-                    {userType}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuLabel>Switch Role</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => setUserType('farmer')}>
-                    <HelpingHand className="mr-2 h-4 w-4" />
-                    <span>Farmer</span>
-                </DropdownMenuItem>
-                 <DropdownMenuItem onClick={() => setUserType('admin')}>
-                    <ShieldCheck className="mr-2 h-4 w-4" />
-                    <span>Admin</span>
-                </DropdownMenuItem>
-                 <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleLogout}>
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>Logout</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-
           <div className="md:hidden">
             <Sheet>
               <SheetTrigger asChild>
@@ -138,10 +102,18 @@ export default function Header() {
                       {link.label}
                     </Link>
                   ))}
+                   <Button onClick={handleLogout} variant="outline" className="mt-4">
+                        <LogOut className="mr-2 h-4 w-4" />
+                        <span>Logout</span>
+                    </Button>
                 </div>
               </SheetContent>
             </Sheet>
           </div>
+           <Button onClick={handleLogout} variant="outline" size="sm" className="hidden md:inline-flex">
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Logout</span>
+            </Button>
         </div>
       </div>
     </header>
