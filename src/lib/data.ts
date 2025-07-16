@@ -1,0 +1,113 @@
+import type { Product, Order } from './types';
+
+export const products: Product[] = [
+  {
+    id: 'prod_001',
+    name: 'Organic Apples',
+    description: 'Crisp and juicy Gala apples, grown without synthetic pesticides. Perfect for snacking, baking, or juicing. Freshly picked from Sunny Meadow Farms.',
+    price: 3.99,
+    image: 'https://placehold.co/600x400',
+    seller: 'Sunny Meadow Farms',
+    aiHint: 'organic apples',
+  },
+  {
+    id: 'prod_002',
+    name: 'Heirloom Tomatoes',
+    description: 'A colorful mix of heirloom tomatoes, bursting with flavor. Ideal for salads, sauces, or enjoying on their own. Grown with love at Greenfield Gardens.',
+    price: 5.49,
+    image: 'https://placehold.co/600x400',
+    seller: 'Greenfield Gardens',
+    aiHint: 'heirloom tomatoes',
+  },
+  {
+    id: 'prod_003',
+    name: 'Free-Range Eggs',
+    description: 'A dozen large brown eggs from pasture-raised, free-range chickens. Rich yolks and firm whites make for the perfect breakfast. From Happy Hen Homestead.',
+    price: 6.00,
+    image: 'https://placehold.co/600x400',
+    seller: 'Happy Hen Homestead',
+    aiHint: 'farm eggs',
+  },
+  {
+    id: 'prod_004',
+    name: 'Raw Honey',
+    description: '16oz jar of pure, unfiltered wildflower honey. Harvested from our local hives. Contains natural pollen and enzymes. A sweet and healthy treat.',
+    price: 12.50,
+    image: 'https://placehold.co/600x400',
+    seller: 'Buzzing Bee Apiary',
+    aiHint: 'raw honey',
+  },
+  {
+    id: 'prod_005',
+    name: 'Sourdough Bread',
+    description: 'Artisanal sourdough loaf, hand-baked with a crispy crust and a soft, chewy interior. Made from locally milled organic flour. A staple for any meal.',
+    price: 8.00,
+    image: 'https://placehold.co/600x400',
+    seller: 'The Grain Mill Bakery',
+    aiHint: 'sourdough bread',
+  },
+  {
+    id: 'prod_006',
+    name: 'Goat Cheese',
+    description: 'Creamy and tangy goat cheese log, perfect for spreading on crackers or crumbling over salads. Made from fresh milk from our herd of happy goats.',
+    price: 9.75,
+    image: 'https://placehold.co/600x400',
+    seller: 'Fainting Goat Creamery',
+    aiHint: 'goat cheese',
+  },
+   {
+    id: 'prod_007',
+    name: 'Organic Kale',
+    description: 'A fresh bunch of organic kale, rich in nutrients. Great for salads, smoothies, or making crispy kale chips. Harvested daily for peak freshness.',
+    price: 3.50,
+    image: 'https://placehold.co/600x400',
+    seller: 'Greenfield Gardens',
+    aiHint: 'organic kale',
+  },
+  {
+    id: 'prod_008',
+    name: 'Grass-Fed Ground Beef',
+    description: 'One pound of premium 85/15 grass-fed ground beef. No hormones or antibiotics. Perfect for burgers, tacos, or meatballs. From cattle raised ethically at Riverbend Ranch.',
+    price: 10.99,
+    image: 'https://placehold.co/600x400',
+    seller: 'Riverbend Ranch',
+    aiHint: 'ground beef',
+  },
+];
+
+export const orders: Order[] = [
+  {
+    id: 'ord_001',
+    items: [
+      { product: products[0], quantity: 2 },
+      { product: products[2], quantity: 1 },
+    ],
+    total: 13.98,
+    status: 'Delivered',
+    date: '2023-10-26',
+    buyerName: 'Alice Johnson',
+  },
+  {
+    id: 'ord_002',
+    items: [
+      { product: products[1], quantity: 1 },
+    ],
+    total: 5.49,
+    status: 'Shipped',
+    date: '2023-10-28',
+    buyerName: 'Bob Williams',
+    buyerQuestion: 'Hi! When can I expect this to arrive? I need it for a dinner party this weekend.',
+  },
+  {
+    id: 'ord_003',
+    items: [
+      { product: products[4], quantity: 2 },
+      { product: products[3], quantity: 1 },
+    ],
+    total: 28.50,
+    status: 'Pending',
+    date: '2023-10-30',
+    buyerName: 'Charlie Brown',
+    buyerQuestion: 'Is this sourdough bread vegan? Thanks!',
+  },
+];
