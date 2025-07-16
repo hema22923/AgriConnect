@@ -89,13 +89,19 @@ export default function Header() {
               {link.label}
             </Link>
           ))}
+           {userName !== 'Guest' && !isLoading && (
+              <Button onClick={handleLogout} variant="ghost" size="sm" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
+                  <LogOut className="mr-2 h-4 w-4"/>
+                  Logout
+              </Button>
+           )}
         </nav>
 
         <div className="flex items-center gap-2">
            {userType === 'buyer' && userName !== 'Guest' && <CartButton />}
            
            {isLoading ? (
-              <Skeleton className="h-10 w-28" />
+              <Skeleton className="h-10 w-10 rounded-full" />
            ) : userName === 'Guest' ? (
              <div className="hidden md:flex items-center gap-2">
                 <Button asChild variant="ghost">

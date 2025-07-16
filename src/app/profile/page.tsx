@@ -8,24 +8,15 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { fetchProducts, orders } from "@/lib/data"
 import type { Product } from '@/lib/types'
 import Image from "next/image"
-import { Edit, PlusCircle, Package, LogOut, ShoppingCart, DollarSign } from "lucide-react"
+import { Edit, PlusCircle, Package, ShoppingCart, DollarSign } from "lucide-react"
 import { useUser } from "@/context/user-context";
 import { useEffect, useState, useMemo } from "react"
 import { Skeleton } from "@/components/ui/skeleton"
-import { useRouter } from "next/navigation"
-import { auth } from "@/lib/firebase"
-import { signOut } from "firebase/auth"
 
 export default function ProfilePage() {
     const { userName, uid } = useUser();
     const [farmerProducts, setFarmerProducts] = useState<Product[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const router = useRouter();
-
-    const handleLogout = async () => {
-        await signOut(auth);
-        router.push('/login');
-    }
 
     useEffect(() => {
         const loadProducts = async () => {
@@ -78,10 +69,6 @@ export default function ProfilePage() {
                             <Edit className="mr-2 h-4 w-4"/>
                             Edit Profile
                         </Link>
-                    </Button>
-                    <Button variant="destructive" onClick={handleLogout}>
-                        <LogOut className="mr-2 h-4 w-4"/>
-                        Logout
                     </Button>
                 </div>
             </div>
