@@ -38,7 +38,9 @@ export default function Header() {
         </nav>
 
         <div className="flex items-center gap-4">
-          <Button>Login</Button>
+          <Button asChild>
+            <Link href="/login">Login</Link>
+          </Button>
           <div className="md:hidden">
             <Sheet>
               <SheetTrigger asChild>
