@@ -21,6 +21,7 @@ import { addUser } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
 import { auth } from '@/lib/firebase';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { FirebaseError } from "firebase/app";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -39,6 +40,7 @@ export default function RegisterPage() {
       const user = userCredential.user;
       
       await addUser(user.uid, { fullName, email, role });
+      
       setUserType(role);
       setUserName(fullName);
       setUserEmail(email);
@@ -55,19 +57,22 @@ export default function RegisterPage() {
       }
     } catch (error: any) {
       console.error("Registration Error:", error);
-      if (error.code === 'auth/email-already-in-use') {
-        toast({
-          title: 'Registration Failed',
-          description: 'This email is already registered. Please log in.',
-          variant: 'destructive',
-        });
-      } else {
-        toast({
-          title: 'Registration Failed',
-          description: error.message || 'An unexpected error occurred.',
-          variant: 'destructive',
-        });
+      let description = 'An unexpected error occurred. Please try again.';
+      if (error instanceof FirebaseError) {
+        if (error.code === 'auth/email-already-in-use') {
+          description = 'This email is already registered. Please log in instead.';
+        } else if (error.code === 'auth/weak-password') {
+          description = 'The password is too weak. Please choose a stronger password.';
+        } else if (error.code === 'auth/invalid-email') {
+          description = 'The email address is not valid.';
+        }
       }
+      
+      toast({
+        title: 'Registration Failed',
+        description: description,
+        variant: 'destructive',
+      });
     }
   };
 
