@@ -1,20 +1,49 @@
 'use client';
 
 import Link from 'next/link';
-import { Leaf, Menu } from 'lucide-react';
+import { Leaf, Menu, LogOut, User, Package, ShoppingCart, BarChart3, HelpingHand } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
   SheetContent,
   SheetTrigger,
 } from '@/components/ui/sheet';
+import { useUser, UserType } from '@/context/user-context';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { useRouter } from 'next/navigation';
+import CartButton from './cart-button';
 
-const navLinks = [
+
+const buyerLinks = [
   { href: '/', label: 'Home' },
-  { href: '/contact', label: 'Contact' },
+  { href: '/orders', label: 'My Orders' },
 ];
 
+const farmerLinks = [
+    { href: '/profile', label: 'Dashboard' },
+    { href: '/orders', label: 'Orders' },
+    { href: '/analytics', label: 'Analytics' },
+];
+
+
 export default function Header() {
+  const { userType, setUserType } = useUser();
+  const router = useRouter();
+
+  const handleLogout = () => {
+    // In a real app, you'd clear the user session here
+    router.push('/login');
+  }
+
+  const navLinks = userType === 'buyer' ? buyerLinks : farmerLinks;
+
   return (
     <header className="bg-background/80 backdrop-blur-sm sticky top-0 z-40 border-b">
       <div className="container mx-auto flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
@@ -38,9 +67,33 @@ export default function Header() {
         </nav>
 
         <div className="flex items-center gap-4">
-          <Button asChild>
-            <Link href="/login">Login</Link>
-          </Button>
+            {userType === 'buyer' && <CartButton />}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className='capitalize'>
+                    <User className="mr-2 h-4 w-4" />
+                    {userType}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuLabel>Switch Role</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => setUserType('buyer')}>
+                    <ShoppingCart className="mr-2 h-4 w-4" />
+                    <span>Buyer</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setUserType('farmer')}>
+                    <HelpingHand className="mr-2 h-4 w-4" />
+                    <span>Farmer</span>
+                </DropdownMenuItem>
+                 <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Logout</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
           <div className="md:hidden">
             <Sheet>
               <SheetTrigger asChild>
