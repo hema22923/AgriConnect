@@ -70,6 +70,7 @@ export default function AiChatbot() {
     <Sheet>
       <SheetTrigger asChild>
         <Button
+          suppressHydrationWarning
           className="fixed bottom-6 right-6 h-16 w-16 rounded-full shadow-lg bg-accent hover:bg-accent/90"
           size="icon"
         >
