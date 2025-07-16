@@ -1,7 +1,7 @@
 
 import type { Product, Order, User } from './types';
 import { db } from './firebase';
-import { collection, addDoc, doc, updateDoc, setDoc, getDocs } from 'firebase/firestore';
+import { collection, addDoc, doc, updateDoc, setDoc, getDocs, getDoc, deleteDoc } from 'firebase/firestore';
 
 
 // This will hold products fetched from Firestore
@@ -27,6 +27,21 @@ export const fetchProducts = async () => {
     }
 }
 
+// Function to fetch a single product by its ID
+export const fetchProductById = async (id: string): Promise<Product | null> => {
+    try {
+        const productDocRef = doc(db, 'products', id);
+        const productSnap = await getDoc(productDocRef);
+        if (productSnap.exists()) {
+            return { id: productSnap.id, ...productSnap.data() } as Product;
+        }
+        return null;
+    } catch (error) {
+        console.error("Error fetching product by ID: ", error);
+        return null;
+    }
+};
+
 // Function to add a new product to Firestore
 export const addProduct = async (product: Omit<Product, 'id'>) => {
   try {
@@ -37,6 +52,29 @@ export const addProduct = async (product: Omit<Product, 'id'>) => {
     console.error("Error adding product: ", e);
   }
 };
+
+// Function to update a product in Firestore
+export const updateProduct = async (id: string, updates: Partial<Product>) => {
+    const productDocRef = doc(db, 'products', id);
+    try {
+        await updateDoc(productDocRef, updates);
+        await fetchProducts(); // Refresh the local cache
+    } catch (error) {
+        console.error("Error updating product: ", error);
+    }
+};
+
+// Function to delete a product from Firestore
+export const deleteProduct = async (id: string) => {
+    const productDocRef = doc(db, 'products', id);
+    try {
+        await deleteDoc(productDocRef);
+        await fetchProducts(); // Refresh the local cache
+    } catch (error) {
+        console.error("Error deleting product: ", error);
+    }
+};
+
 
 // Function to add a new user to Firestore
 export const addUser = async (uid: string, user: Omit<User, 'password'>) => {

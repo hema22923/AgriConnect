@@ -25,10 +25,12 @@ export default function Home() {
   }, []);
 
   const filteredProducts = useMemo(() => {
+    // Filter out of stock products first, then search
+    let productsToShow = allProducts.filter(p => p.stock > 0);
     if (!searchTerm) {
-      return allProducts;
+      return productsToShow;
     }
-    return allProducts.filter((product) =>
+    return productsToShow.filter((product) =>
       product.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [searchTerm, allProducts]);

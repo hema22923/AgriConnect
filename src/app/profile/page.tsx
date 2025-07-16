@@ -15,6 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { auth } from "@/lib/firebase";
 import { signOut } from "firebase/auth";
 import { useRouter } from "next/navigation";
+import { Badge } from "@/components/ui/badge";
 
 export default function ProfilePage() {
     const { userName, uid } = useUser();
@@ -143,9 +144,15 @@ export default function ProfilePage() {
                                     <div className="flex-1">
                                         <p className="font-semibold">{product.name}</p>
                                         <p className="text-sm text-muted-foreground">${product.price.toFixed(2)}</p>
-                                        <p className="text-xs text-muted-foreground">{product.stock} in stock</p>
+                                        {product.stock > 0 ? (
+                                            <p className="text-xs text-muted-foreground">{product.stock} in stock</p>
+                                        ) : (
+                                            <Badge variant="destructive" className="text-xs">Out of Stock</Badge>
+                                        )}
                                     </div>
-                                    <Button variant="outline" size="sm">Edit</Button>
+                                    <Button asChild variant="outline" size="sm">
+                                        <Link href={`/products/edit/${product.id}`}>Edit</Link>
+                                    </Button>
                                 </div>
                             ))
                         ) : (
