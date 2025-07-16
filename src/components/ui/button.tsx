@@ -41,6 +41,11 @@ export interface ButtonProps
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, ...props }, ref) => {
+    // This is a workaround for a hydration error caused by browser extensions injecting attributes.
+    if ('fdprocessedid' in props) {
+      delete (props as any)['fdprocessedid'];
+    }
+    
     const Comp = asChild ? Slot : "button"
     return (
       <Comp

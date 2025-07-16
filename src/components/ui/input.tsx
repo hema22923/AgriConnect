@@ -4,6 +4,11 @@ import { cn } from "@/lib/utils"
 
 const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
   ({ className, type, ...props }, ref) => {
+    // This is a workaround for a hydration error caused by browser extensions injecting attributes.
+    if ('fdprocessedid' in props) {
+      delete (props as any)['fdprocessedid'];
+    }
+    
     return (
       <input
         type={type}
