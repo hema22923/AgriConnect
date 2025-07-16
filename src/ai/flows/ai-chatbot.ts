@@ -46,6 +46,8 @@ const prompt = ai.definePrompt({
   - The platform supports order management and status updates.
   - Payments are simulated for secure transactions.
 
+  If the query is a simple greeting like "hi" or "hello", respond with a friendly greeting and ask how you can help.
+
   Query: {{{query}}}`,
 });
 
