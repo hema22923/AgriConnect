@@ -72,20 +72,20 @@ export default function EditProfilePage() {
                             </Avatar>
                             <div className="space-y-2 flex-1">
                                 <Label htmlFor="farmImage">Farm Image</Label>
-                                <Input id="farmImage" type="file" accept="image/*" onChange={handleImageChange} />
+                                <Input id="farmImage" type="file" accept="image/*" onChange={handleImageChange} suppressHydrationWarning />
                                 <p className="text-xs text-muted-foreground">Upload a new display picture for your farm.</p>
                             </div>
                         </div>
 
                         <div className="space-y-2">
                             <Label htmlFor="farmName">Farm Name</Label>
-                            <Input id="farmName" name="farmName" defaultValue={userName} placeholder="e.g., Green Valley Farms" required/>
+                            <Input id="farmName" name="farmName" defaultValue={userName} placeholder="e.g., Green Valley Farms" required suppressHydrationWarning/>
                         </div>
                          <div className="space-y-2">
                             <Label htmlFor="description">Farm Description</Label>
-                            <Textarea id="description" name="description" defaultValue="" placeholder="Tell us about your farm..." required/>
+                            <Textarea id="description" name="description" defaultValue="" placeholder="Tell us about your farm..." required suppressHydrationWarning/>
                         </div>
-                        <Button type="submit" className="w-full h-11">
+                        <Button type="submit" className="w-full h-11" suppressHydrationWarning>
                             <Save className="mr-2 h-4 w-4" />
                             Save Changes
                         </Button>
