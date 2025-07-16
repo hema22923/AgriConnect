@@ -1,5 +1,8 @@
 
 import type { Product, Order, User } from './types';
+import { db } from './firebase';
+import { collection, addDoc, doc, updateDoc, setDoc } from 'firebase/firestore';
+
 
 // Let's start with some dummy products
 export let products: Product[] = [];
@@ -17,19 +20,22 @@ export const addProduct = (product: Product) => {
   products.unshift(product);
 };
 
-// Function to add a new user
-export const addUser = (user: User) => {
-  if (users.find(u => u.email === user.email)) {
-    console.warn("User with this email already exists");
-    return;
+// Function to add a new user to Firestore
+export const addUser = async (uid: string, user: Omit<User, 'password'>) => {
+  try {
+    await setDoc(doc(db, "users", uid), user);
+  } catch (e) {
+    console.error("Error adding document: ", e);
   }
-  users.push(user);
 };
 
-// Function to update a user
-export const updateUser = (email: string, updates: Partial<User>) => {
-    const userIndex = users.findIndex(u => u.email === email);
-    if (userIndex !== -1) {
-        users[userIndex] = { ...users[userIndex], ...updates };
+
+// Function to update a user in Firestore
+export const updateUser = async (uid: string, updates: Partial<User>) => {
+    const userDocRef = doc(db, 'users', uid);
+    try {
+        await updateDoc(userDocRef, updates);
+    } catch (error) {
+        console.error("Error updating user: ", error);
     }
 };

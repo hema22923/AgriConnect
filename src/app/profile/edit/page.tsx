@@ -3,31 +3,33 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Save, Image as ImageIcon } from "lucide-react";
+import { ArrowLeft, Save } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useUser } from "@/context/user-context";
 import { updateUser } from "@/lib/data";
+import { auth } from "@/lib/firebase";
 
 export default function EditProfilePage() {
     const { toast } = useToast();
     const router = useRouter();
-    const { userEmail, userName, setUserName } = useUser();
+    const { userName, setUserName } = useUser();
     const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
         const farmName = formData.get('farmName') as string;
         
-        if (farmName && userEmail) {
-            updateUser(userEmail, { fullName: farmName });
+        const currentUser = auth.currentUser;
+        if (farmName && currentUser) {
+            await updateUser(currentUser.uid, { fullName: farmName });
             setUserName(farmName);
         }
         

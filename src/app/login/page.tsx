@@ -15,9 +15,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Leaf } from "lucide-react";
 import Link from "next/link";
-import { useUser, UserType } from '@/context/user-context';
-import { users } from '@/lib/data';
+import { useUser } from '@/context/user-context';
 import { useToast } from '@/hooks/use-toast';
+import { auth, db } from '@/lib/firebase';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -26,29 +28,39 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const user = users.find(u => u.email === email);
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const firebaseUser = userCredential.user;
 
-    if (user && user.password === password) {
-      setUserType(user.role);
-      setUserName(user.fullName);
-      setUserEmail(user.email);
-      
-      toast({
-        title: 'Login Successful',
-        description: `Welcome back, ${user.fullName}!`,
-      });
+      const userDocRef = doc(db, 'users', firebaseUser.uid);
+      const userDoc = await getDoc(userDocRef);
 
-      if (user.role === 'farmer') {
-        router.push('/profile');
-      } else if (user.role === 'admin') {
-        router.push('/admin');
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        setUserType(userData.role);
+        setUserName(userData.fullName);
+        setUserEmail(userData.email);
+
+        toast({
+          title: 'Login Successful',
+          description: `Welcome back, ${userData.fullName}!`,
+        });
+
+        if (userData.role === 'farmer') {
+          router.push('/profile');
+        } else if (userData.role === 'admin') {
+          router.push('/admin');
+        } else {
+          router.push('/');
+        }
       } else {
-        router.push('/');
+         throw new Error("User data not found in Firestore.");
       }
-    } else {
-      toast({
+    } catch (error: any) {
+       console.error("Login Error:", error);
+       toast({
         title: 'Invalid Credentials',
         description: 'Please check your email and password.',
         variant: 'destructive',

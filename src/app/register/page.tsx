@@ -19,6 +19,8 @@ import Link from "next/link";
 import { useUser, UserType } from "@/context/user-context";
 import { addUser } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
+import { auth } from '@/lib/firebase';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -29,23 +31,35 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('');
   const [role, setRole] = useState<UserType>('buyer');
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    addUser({ fullName, email, password, role });
-    setUserType(role);
-    setUserName(fullName);
-    setUserEmail(email);
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      
+      await addUser(user.uid, { fullName, email, role });
+      setUserType(role);
+      setUserName(fullName);
+      setUserEmail(email);
 
-    toast({
-      title: 'Account Created!',
-      description: 'You have been successfully registered.',
-    });
+      toast({
+        title: 'Account Created!',
+        description: 'You have been successfully registered.',
+      });
 
-    if (role === 'farmer') {
-      router.push('/profile');
-    } else {
-      router.push('/');
+      if (role === 'farmer') {
+        router.push('/profile');
+      } else {
+        router.push('/');
+      }
+    } catch (error: any) {
+      console.error("Registration Error:", error);
+      toast({
+        title: 'Registration Failed',
+        description: error.message || 'An unexpected error occurred.',
+        variant: 'destructive',
+      });
     }
   };
 
