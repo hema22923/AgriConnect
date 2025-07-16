@@ -6,7 +6,7 @@ import Link from "next/link"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { products } from "@/lib/data"
 import Image from "next/image"
-import { Edit, LogOut } from "lucide-react"
+import { Edit, LogOut, PlusCircle, Package } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
 
@@ -33,8 +33,8 @@ export default function ProfilePage() {
                         <AvatarFallback>MF</AvatarFallback>
                     </Avatar>
                     <div>
-                        <h1 className="text-3xl font-bold font-headline">My Farm</h1>
-                        <p className="text-muted-foreground">Your farm description will appear here.</p>
+                        <h1 className="text-3xl font-bold font-headline">My Farm Dashboard</h1>
+                        <p className="text-muted-foreground">Manage your farm and product listings.</p>
                     </div>
                 </div>
                 <div className="flex gap-2">
@@ -55,6 +55,12 @@ export default function ProfilePage() {
                 <CardHeader>
                     <div className="flex justify-between items-center">
                         <CardTitle className="font-headline">Your Products</CardTitle>
+                         <Button asChild>
+                            <Link href="/products/new">
+                                <PlusCircle className="mr-2 h-4 w-4"/>
+                                Add New Product
+                            </Link>
+                        </Button>
                     </div>
                     <CardDescription>Manage your product listings below.</CardDescription>
                 </CardHeader>
@@ -73,7 +79,9 @@ export default function ProfilePage() {
                     </div>
                      {farmerProducts.length === 0 && (
                         <div className="text-center text-muted-foreground py-8">
-                            <p>You haven&apos;t added any products yet.</p>
+                            <Package className="mx-auto h-12 w-12 mb-4" />
+                            <h3 className="text-xl font-semibold">No products yet</h3>
+                            <p>Click "Add New Product" to get started.</p>
                         </div>
                     )}
                 </CardContent>

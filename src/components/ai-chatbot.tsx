@@ -9,24 +9,25 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { aiChatbot } from '@/ai/flows/ai-chatbot';
 import { cn } from '@/lib/utils';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Label } from '@/components/ui/label';
+import { useUser } from '@/context/user-context';
 
 type Message = {
   text: string;
   sender: 'user' | 'bot';
 };
 
-type UserType = 'buyer' | 'farmer';
-
 export default function AiChatbot() {
+  const { userType } = useUser();
   const [messages, setMessages] = useState<Message[]>([
-    { sender: 'bot', text: "Hello! I'm the AgriConnect AI Chatbot. Are you a buyer or a farmer today?" },
+    { sender: 'bot', text: `Hello! As a ${userType}, how can I help you today on the AgriConnect platform?` },
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [userType, setUserType] = useState<UserType>('buyer');
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setMessages([{ sender: 'bot', text: `Hello! As a ${userType}, how can I help you today on the AgriConnect platform?` }]);
+  }, [userType]);
 
   const scrollToBottom = () => {
     if (scrollAreaRef.current) {
@@ -87,18 +88,7 @@ export default function AiChatbot() {
             <span className="sr-only">Close</span>
           </SheetClose>
         </SheetHeader>
-        <div className="px-4 pt-4">
-            <Label htmlFor="user-type">I am a...</Label>
-            <Select value={userType} onValueChange={(value) => setUserType(value as UserType)}>
-                <SelectTrigger id="user-type" className="w-full">
-                    <SelectValue placeholder="Select your role" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="buyer">Buyer</SelectItem>
-                    <SelectItem value="farmer">Farmer</SelectItem>
-                </SelectContent>
-            </Select>
-        </div>
+        
         <ScrollArea className="flex-1" ref={scrollAreaRef}>
           <div className="p-4 space-y-6">
             {messages.map((message, index) => (

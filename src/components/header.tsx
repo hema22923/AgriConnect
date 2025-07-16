@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Leaf, Menu } from 'lucide-react';
+import { Leaf, Menu, Users, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -10,10 +10,16 @@ import {
 } from '@/components/ui/sheet';
 import CartButton from './cart-button';
 import { useEffect, useState } from 'react';
+import { useUser } from '@/context/user-context';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 
-const navLinks = [
-  { href: '/orders', label: 'Orders' },
-  { href: '/profile', label: 'Profile' },
+const buyerLinks = [
+  { href: '/orders', label: 'My Orders' },
+];
+
+const farmerLinks = [
+    { href: '/profile', label: 'Dashboard' },
 ];
 
 const ClientOnlyCartButton = () => {
@@ -28,6 +34,13 @@ const ClientOnlyCartButton = () => {
 
 
 export default function Header() {
+  const { userType, setUserType } = useUser();
+  const navLinks = userType === 'buyer' ? buyerLinks : farmerLinks;
+
+  const handleRoleChange = (isFarmer: boolean) => {
+    setUserType(isFarmer ? 'farmer' : 'buyer');
+  }
+
   return (
     <header className="bg-background/80 backdrop-blur-sm sticky top-0 z-40 border-b">
       <div className="container mx-auto flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
@@ -37,6 +50,19 @@ export default function Header() {
             AgriConnect
           </span>
         </Link>
+        
+        <div className="flex items-center gap-2 text-sm">
+            <ShoppingBag className="h-5 w-5"/>
+            <Label htmlFor="role-switcher" className={userType === 'buyer' ? 'font-bold text-primary' : ''}>Buyer</Label>
+            <Switch
+                id="role-switcher"
+                checked={userType === 'farmer'}
+                onCheckedChange={handleRoleChange}
+            />
+            <Label htmlFor="role-switcher" className={userType === 'farmer' ? 'font-bold text-primary' : ''}>Farmer</Label>
+            <Users className="h-5 w-5"/>
+        </div>
+
         <nav className="hidden md:flex items-center gap-6">
           {navLinks.map((link) => (
             <Link
@@ -48,8 +74,9 @@ export default function Header() {
             </Link>
           ))}
         </nav>
+
         <div className="flex items-center gap-4">
-            <ClientOnlyCartButton />
+            {userType === 'buyer' && <ClientOnlyCartButton />}
             <div className="md:hidden">
                  <Sheet>
                     <SheetTrigger asChild>
