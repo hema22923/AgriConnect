@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -7,15 +8,30 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2, Image as ImageIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { addProduct } from '@/lib/data';
+import { useUser } from '@/context/user-context';
+import Image from 'next/image';
 
 export default function NewProductPage() {
     const { toast } = useToast();
     const router = useRouter();
+    const { userName } = useUser();
     const [isLoading, setIsLoading] = useState(false);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setImagePreview(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -25,16 +41,16 @@ export default function NewProductPage() {
         const name = formData.get('name') as string;
         const description = formData.get('description') as string;
         const price = parseFloat(formData.get('price') as string);
+        const aiHint = formData.get('aiHint') as string || 'fresh produce';
 
-        // In a real app, image would be uploaded to storage and URL saved
         const newProduct = {
             id: `prod_${Date.now()}`,
             name,
             description,
             price,
-            image: `https://placehold.co/600x400`,
-            seller: 'My Farm', // Assuming the current user is 'My Farm'
-            aiHint: 'fresh produce',
+            image: imagePreview || `https://placehold.co/600x400`,
+            seller: userName,
+            aiHint,
         };
 
         addProduct(newProduct);
@@ -77,10 +93,22 @@ export default function NewProductPage() {
                                 <Label htmlFor="price">Price ($)</Label>
                                 <Input id="price" name="price" type="number" step="0.01" placeholder="e.g., 5.99" required/>
                             </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="image">Product Image</Label>
-                                <Input id="image" type="file" />
-                                <p className="text-xs text-muted-foreground">Image upload is simulated.</p>
+                             <div className="space-y-2">
+                                <Label htmlFor="aiHint">Image AI Hint</Label>
+                                <Input id="aiHint" name="aiHint" placeholder="e.g., fresh strawberries" required/>
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="image">Product Image</Label>
+                            <div className="flex items-center gap-4">
+                                <div className="w-24 h-24 rounded-md border flex items-center justify-center bg-muted/50">
+                                    {imagePreview ? (
+                                        <Image src={imagePreview} alt="Product preview" width={96} height={96} className="object-cover rounded-md h-full w-full" />
+                                    ) : (
+                                        <ImageIcon className="h-8 w-8 text-muted-foreground" />
+                                    )}
+                                </div>
+                                <Input id="image" type="file" onChange={handleImageChange} accept="image/*" className="flex-1"/>
                             </div>
                         </div>
                         <Button type="submit" disabled={isLoading} className="w-full h-11 bg-accent hover:bg-accent/90">
