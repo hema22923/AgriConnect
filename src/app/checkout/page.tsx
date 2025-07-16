@@ -11,14 +11,29 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { CheckCircle, Loader2 } from 'lucide-react';
 import { db } from '@/lib/firebase';
-import { doc, updateDoc, increment } from 'firebase/firestore';
+import { doc, updateDoc, increment, collection, addDoc, serverTimestamp, writeBatch } from 'firebase/firestore';
+import { useUser } from '@/context/user-context';
+import type { OrderItem } from '@/lib/types';
 
 export default function CheckoutPage() {
   const { cart, cartTotal, clearCart } = useCart();
+  const { uid, userName } = useUser();
   const router = useRouter();
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
   const [isOrderPlaced, setIsOrderPlaced] = useState(false);
+  const [shippingInfo, setShippingInfo] = useState({
+      name: '',
+      email: '',
+      address: '',
+      city: '',
+      zip: '',
+  });
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const { id, value } = e.target;
+      setShippingInfo(prev => ({ ...prev, [id]: value }));
+  }
 
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,22 +45,57 @@ export default function CheckoutPage() {
       });
       return;
     }
+     if (!uid) {
+      toast({
+        title: "Not Logged In",
+        description: "You must be logged in to place an order.",
+        variant: "destructive"
+      });
+      router.push('/login');
+      return;
+    }
 
     setIsProcessing(true);
     
-    // In a real app, you would save the order to a database here
-    // And also update the stock
     try {
-      // Create a batch write to update all product stocks atomically
+      const batch = writeBatch(db);
+
+      // 1. Decrement stock for each product
       for (const item of cart) {
         const productRef = doc(db, 'products', item.product.id);
-        await updateDoc(productRef, {
+        batch.update(productRef, {
           stock: increment(-item.quantity),
         });
       }
 
-      // Simulate API call for order processing
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // 2. Create the new order document
+      const ordersCollection = collection(db, 'orders');
+      const newOrderRef = doc(ordersCollection); // Create a new doc with a generated ID
+
+      const orderItems: OrderItem[] = cart.map(item => ({
+          productId: item.product.id,
+          name: item.product.name,
+          price: item.product.price,
+          quantity: item.quantity,
+          image: item.product.image,
+          aiHint: item.product.aiHint,
+          isRated: false,
+      }));
+
+      batch.set(newOrderRef, {
+        userId: uid,
+        buyerName: shippingInfo.name || userName,
+        items: orderItems,
+        total: cartTotal,
+        status: 'Pending',
+        date: serverTimestamp(),
+      });
+
+      // Commit the batch
+      await batch.commit();
+
+      // Simulate API call for payment processing
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
       setIsProcessing(false);
       setIsOrderPlaced(true);
@@ -88,23 +138,23 @@ export default function CheckoutPage() {
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label htmlFor="name">Full Name</Label>
-              <Input id="name" placeholder="John Doe" required />
+              <Input id="name" placeholder="John Doe" value={shippingInfo.name} onChange={handleInputChange} required />
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="john@example.com" required />
+              <Input id="email" type="email" placeholder="john@example.com" value={shippingInfo.email} onChange={handleInputChange} required />
             </div>
             <div className="md:col-span-2 space-y-2">
               <Label htmlFor="address">Street Address</Label>
-              <Input id="address" placeholder="123 Farmhouse Lane" required />
+              <Input id="address" placeholder="123 Farmhouse Lane" value={shippingInfo.address} onChange={handleInputChange} required />
             </div>
             <div className="space-y-2">
               <Label htmlFor="city">City</Label>
-              <Input id="city" placeholder="Green Valley" required />
+              <Input id="city" placeholder="Green Valley" value={shippingInfo.city} onChange={handleInputChange} required />
             </div>
             <div className="space-y-2">
               <Label htmlFor="zip">ZIP Code</Label>
-              <Input id="zip" placeholder="12345" required />
+              <Input id="zip" placeholder="12345" value={shippingInfo.zip} onChange={handleInputChange} required />
             </div>
           </CardContent>
            <CardHeader className="pt-0">

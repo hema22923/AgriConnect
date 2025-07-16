@@ -1,12 +1,13 @@
 
 import type { Product, Order, User } from './types';
 import { db } from './firebase';
-import { collection, addDoc, doc, updateDoc, setDoc, getDocs, getDoc, deleteDoc } from 'firebase/firestore';
+import { collection, addDoc, doc, updateDoc, setDoc, getDocs, getDoc, deleteDoc, query, where, writeBatch, runTransaction } from 'firebase/firestore';
 
 
 // This will hold products fetched from Firestore
 export let products: Product[] = [];
 
+// This will hold orders fetched from Firestore
 export let orders: Order[] = [];
 
 // Simulate a user database
@@ -77,6 +78,67 @@ export const deleteProduct = async (id: string) => {
         await fetchProducts(); // Refresh the local cache
     } catch (error) {
         console.error("Error deleting product: ", error);
+    }
+};
+
+// Function to fetch orders for a specific user
+export const fetchOrdersForUser = async (userId: string): Promise<Order[]> => {
+    try {
+        const ordersCollection = collection(db, 'orders');
+        const q = query(ordersCollection, where("userId", "==", userId));
+        const orderSnapshot = await getDocs(q);
+        const userOrders = orderSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order));
+        // Sort by date descending
+        return userOrders.sort((a, b) => b.date.seconds - a.date.seconds);
+    } catch (e) {
+        console.error("Error fetching user orders: ", e);
+        return [];
+    }
+};
+
+// Function to update a product's rating
+export const updateProductRating = async (productId: string, newRating: number) => {
+    const productRef = doc(db, 'products', productId);
+    try {
+        await runTransaction(db, async (transaction) => {
+            const productDoc = await transaction.get(productRef);
+            if (!productDoc.exists()) {
+                throw "Product does not exist!";
+            }
+            const productData = productDoc.data() as Product;
+            const oldRating = productData.rating || 0;
+            const oldReviewCount = productData.reviewCount || 0;
+
+            const newReviewCount = oldReviewCount + 1;
+            const newAverageRating = ((oldRating * oldReviewCount) + newRating) / newReviewCount;
+
+            transaction.update(productRef, {
+                rating: newAverageRating,
+                reviewCount: newReviewCount
+            });
+        });
+    } catch (error) {
+        console.error("Error updating product rating: ", error);
+        throw error; // Re-throw to be caught by the caller
+    }
+};
+
+
+// Function to mark an item in an order as rated
+export const updateOrderItemAsRated = async (orderId: string, productId: string) => {
+    const orderRef = doc(db, 'orders', orderId);
+    try {
+        const orderDoc = await getDoc(orderRef);
+        if (orderDoc.exists()) {
+            const orderData = orderDoc.data() as Order;
+            const updatedItems = orderData.items.map(item =>
+                item.productId === productId ? { ...item, isRated: true } : item
+            );
+            await updateDoc(orderRef, { items: updatedItems });
+        }
+    } catch (error) {
+        console.error("Error marking item as rated: ", error);
+        throw error;
     }
 };
 

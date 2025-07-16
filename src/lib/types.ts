@@ -18,12 +18,23 @@ export type CartItem = {
   quantity: number;
 };
 
+export type OrderItem = {
+  productId: string;
+  name: string;
+  price: number;
+  quantity: number;
+  image: string;
+  aiHint: string;
+  isRated: boolean;
+}
+
 export type Order = {
   id: string;
-  items: CartItem[];
+  userId: string;
+  items: OrderItem[];
   total: number;
   status: 'Pending' | 'Shipped' | 'Delivered' | 'Cancelled';
-  date: string;
+  date: any; // Using 'any' for Firestore Timestamp compatibility
   buyerName: string;
   buyerQuestion?: string;
 };
