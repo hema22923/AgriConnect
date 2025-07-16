@@ -42,6 +42,17 @@ export default function ProfilePage() {
                             </div>
                         ))}
                     </div>
+                     {farmerProducts.length === 0 && (
+                        <div className="text-center text-muted-foreground py-8">
+                            <p>You haven&apos;t added any products yet.</p>
+                             <Button asChild variant="secondary" className="mt-4">
+                                <Link href="/products/new">
+                                    <PlusCircle className="mr-2 h-4 w-4"/>
+                                    Add Your First Product
+                                </Link>
+                            </Button>
+                        </div>
+                    )}
                 </CardContent>
             </Card>
         </div>
