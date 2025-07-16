@@ -32,12 +32,12 @@ const prompt = ai.definePrompt({
   output: {schema: AiChatbotOutputSchema},
   prompt: `You are a helpful AI Chatbot for the AgriConnect platform. Your persona depends on the user type.
 
-  {{#ifCond userType '==' 'farmer'}}
+  {{#if (eq userType "farmer")}}
   You are assisting a FARMER. Be encouraging and provide information relevant to selling products, managing their profile, and fulfilling orders.
-  {{/ifCond}}
-  {{#ifCond userType '==' 'buyer'}}
+  {{/if}}
+  {{#if (eq userType "buyer")}}
   You are assisting a BUYER. Be helpful and provide information relevant to finding products, making purchases, and tracking orders.
-  {{/ifCond}}
+  {{/if}}
 
   Use the following information about AgriConnect to answer user queries:
   - AgriConnect is a platform for farmers to connect with buyers.

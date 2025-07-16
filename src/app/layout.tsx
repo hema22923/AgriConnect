@@ -5,7 +5,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { CartProvider } from '@/context/cart-context';
 import Header from '@/components/header';
 import Footer from '@/components/footer';
-import IntelligentAssistant from '@/components/intelligent-assistant';
+import AiChatbot from '@/components/ai-chatbot';
 
 export const metadata: Metadata = {
   title: 'AgriConnect',
@@ -32,7 +32,7 @@ export default function RootLayout({
             {children}
           </main>
           <Footer />
-          <IntelligentAssistant />
+          <AiChatbot />
           <Toaster />
         </CartProvider>
       </body>
