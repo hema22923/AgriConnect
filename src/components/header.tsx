@@ -54,6 +54,9 @@ export default function Header() {
   }
 
   const getNavLinks = () => {
+    if (userName === 'Guest') {
+        return [];
+    }
     switch (userType) {
       case 'farmer':
         return farmerLinks;
