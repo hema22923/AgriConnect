@@ -23,6 +23,7 @@ import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import CartButton from './cart-button';
 import { auth } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
+import { Skeleton } from './ui/skeleton';
 
 
 const buyerLinks = [
@@ -42,19 +43,17 @@ const adminLinks = [
 
 
 export default function Header() {
-  const { userType, userName, setUserType, setUserName, setUserEmail } = useUser();
+  const { userType, userName, isLoading, setUserName, setUserType, setUserEmail } = useUser();
   const router = useRouter();
 
   const handleLogout = async () => {
     await signOut(auth);
-    setUserType('buyer'); // default to buyer view
-    setUserName('Guest');
-    setUserEmail(null);
+    // State will be cleared by the onAuthStateChanged listener in UserProvider
     router.push('/login');
   }
 
   const getNavLinks = () => {
-    if (userName === 'Guest') {
+    if (userName === 'Guest' || isLoading) {
         return [];
     }
     switch (userType) {
@@ -95,7 +94,9 @@ export default function Header() {
         <div className="flex items-center gap-2">
            {userType === 'buyer' && userName !== 'Guest' && <CartButton />}
            
-           {userName === 'Guest' ? (
+           {isLoading ? (
+              <Skeleton className="h-10 w-28" />
+           ) : userName === 'Guest' ? (
              <div className="hidden md:flex items-center gap-2">
                 <Button asChild variant="ghost">
                     <Link href="/login">
@@ -162,7 +163,12 @@ export default function Header() {
                     </Link>
                   ))}
                   <DropdownMenuSeparator />
-                   {userName === 'Guest' ? (
+                   {isLoading ? (
+                     <div className="flex flex-col gap-4">
+                        <Skeleton className="h-8 w-32" />
+                        <Skeleton className="h-8 w-28" />
+                     </div>
+                   ) : userName === 'Guest' ? (
                      <>
                         <Link href="/login" className="flex w-full items-center py-2 text-lg font-semibold">
                             <LogIn className="mr-2 h-5 w-5" />
