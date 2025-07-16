@@ -2,35 +2,45 @@
 'use client';
 
 import Link from 'next/link';
-import { Leaf, Menu, LogOut, User, Package, ShoppingCart, BarChart3, HelpingHand, ShieldCheck } from 'lucide-react';
+import { Leaf, Menu, LogOut, User, Package, ShoppingCart, BarChart3, HelpingHand, ShieldCheck, UserCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
   SheetContent,
   SheetTrigger,
 } from '@/components/ui/sheet';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { useUser, UserType } from '@/context/user-context';
 import { useRouter } from 'next/navigation';
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
+import CartButton from './cart-button';
 
 
 const buyerLinks = [
-  { href: '/', label: 'Home' },
-  { href: '/orders', label: 'My Orders' },
+  { href: '/', label: 'Home', icon: Package },
+  { href: '/orders', label: 'My Orders', icon: ShoppingCart },
 ];
 
 const farmerLinks = [
-    { href: '/profile', label: 'Dashboard' },
-    { href: '/orders', label: 'Orders' },
-    { href: '/analytics', label: 'Analytics' },
+    { href: '/profile', label: 'Dashboard', icon: User },
+    { href: '/orders', label: 'Orders', icon: Package },
+    { href: '/analytics', label: 'Analytics', icon: BarChart3 },
 ];
 
 const adminLinks = [
-    { href: '/admin', label: 'User Management' },
+    { href: '/admin', label: 'User Management', icon: ShieldCheck },
 ]
 
 
 export default function Header() {
-  const { userType, setUserType, setUserName } = useUser();
+  const { userType, userName, setUserName, setUserType } = useUser();
   const router = useRouter();
 
   const handleLogout = () => {
@@ -77,6 +87,30 @@ export default function Header() {
         </nav>
 
         <div className="flex items-center gap-4">
+           {userType === 'buyer' && <CartButton />}
+           <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                <Avatar>
+                    <AvatarImage src={`https://i.pravatar.cc/40?u=${userName}`} />
+                    <AvatarFallback>{userName ? userName.charAt(0).toUpperCase() : 'G'}</AvatarFallback>
+                </Avatar>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56" align="end" forceMount>
+              <DropdownMenuLabel className="font-normal">
+                <div className="flex flex-col space-y-1">
+                  <p className="text-sm font-medium leading-none" suppressHydrationWarning>{userName}</p>
+                </div>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleLogout}>
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Log out</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           <div className="md:hidden">
             <Sheet>
               <SheetTrigger asChild>
@@ -99,21 +133,14 @@ export default function Header() {
                       href={link.href}
                       className="flex w-full items-center py-2 text-lg font-semibold"
                     >
+                      <link.icon className="mr-2 h-5 w-5" />
                       {link.label}
                     </Link>
                   ))}
-                   <Button onClick={handleLogout} variant="outline" className="mt-4" suppressHydrationWarning>
-                        <LogOut className="mr-2 h-4 w-4" />
-                        <span>Logout</span>
-                    </Button>
                 </div>
               </SheetContent>
             </Sheet>
           </div>
-           <Button onClick={handleLogout} variant="outline" size="sm" className="hidden md:inline-flex" suppressHydrationWarning>
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>Logout</span>
-            </Button>
         </div>
       </div>
     </header>
