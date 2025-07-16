@@ -12,10 +12,8 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
   if (!order) {
     notFound();
   }
-
-  // To demonstrate the Smart Reply feature, we need a product from the order.
-  // In a real app, you might have a more complex logic to associate a question to a product.
-  const productForReply = order.items.length > 0 ? order.items[0].product : products[0];
+  
+  const productForReply = order.items.length > 0 ? order.items[0].product : null;
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">

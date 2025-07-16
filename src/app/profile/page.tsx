@@ -7,18 +7,18 @@ import Image from "next/image"
 import { PlusCircle } from "lucide-react"
 
 export default function ProfilePage() {
-    const farmerProducts = products.filter(p => p.seller === "Sunny Meadow Farms");
+    const farmerProducts = products.filter(p => p.seller === "My Farm");
 
     return (
         <div className="max-w-4xl mx-auto space-y-8">
             <div className="flex items-center gap-6">
                 <Avatar className="h-24 w-24 border-4 border-primary/20">
                     <AvatarImage src="https://placehold.co/100x100" alt="Farmer" data-ai-hint="farmer portrait" />
-                    <AvatarFallback>SM</AvatarFallback>
+                    <AvatarFallback>MF</AvatarFallback>
                 </Avatar>
                 <div>
-                    <h1 className="text-3xl font-bold font-headline">Sunny Meadow Farms</h1>
-                    <p className="text-muted-foreground">Providing fresh, organic produce since 2010.</p>
+                    <h1 className="text-3xl font-bold font-headline">My Farm</h1>
+                    <p className="text-muted-foreground">Your farm description goes here.</p>
                 </div>
             </div>
 
