@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
@@ -7,20 +8,22 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { products } from "@/lib/data"
 import Image from "next/image"
 import { Edit, PlusCircle, Package } from "lucide-react"
+import { useUser } from "@/context/user-context";
 
 export default function ProfilePage() {
-    const farmerProducts = products.filter(p => p.seller === "My Farm");
+    const { userName } = useUser();
+    const farmerProducts = products.filter(p => p.seller === "My Farm" || p.seller === userName);
 
     return (
         <div className="max-w-4xl mx-auto space-y-8">
             <div className="flex justify-between items-start">
                 <div className="flex items-center gap-6">
                     <Avatar className="h-24 w-24 border-4 border-primary/20">
-                        <AvatarImage src="https://placehold.co/100x100" alt="Farmer" data-ai-hint="farmer portrait" />
-                        <AvatarFallback>MF</AvatarFallback>
+                        <AvatarImage src={`https://i.pravatar.cc/100?u=${userName}`} alt="Farmer" data-ai-hint="farmer portrait" />
+                        <AvatarFallback>{userName.charAt(0)}</AvatarFallback>
                     </Avatar>
                     <div>
-                        <h1 className="text-3xl font-bold font-headline">My Farm Dashboard</h1>
+                        <h1 className="text-3xl font-bold font-headline">{userName}'s Dashboard</h1>
                         <p className="text-muted-foreground">Manage your farm and product listings.</p>
                     </div>
                 </div>

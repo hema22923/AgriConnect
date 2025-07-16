@@ -1,3 +1,4 @@
+
 export type Product = {
   id: string;
   name: string;
@@ -21,4 +22,11 @@ export type Order = {
   date: string;
   buyerName: string;
   buyerQuestion?: string;
+};
+
+export type User = {
+  fullName: string;
+  email: string;
+  password?: string; // Optional for security reasons in a real app
+  role: 'buyer' | 'farmer' | 'admin';
 };

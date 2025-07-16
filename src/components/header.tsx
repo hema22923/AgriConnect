@@ -1,7 +1,8 @@
+
 'use client';
 
 import Link from 'next/link';
-import { Leaf, Menu, LogOut, User, Package, ShoppingCart, BarChart3, HelpingHand } from 'lucide-react';
+import { Leaf, Menu, LogOut, User, Package, ShoppingCart, BarChart3, HelpingHand, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -32,17 +33,35 @@ const farmerLinks = [
     { href: '/analytics', label: 'Analytics' },
 ];
 
+const adminLinks = [
+    { href: '/admin', label: 'User Management' },
+]
+
 
 export default function Header() {
-  const { userType, setUserType } = useUser();
+  const { userType, setUserType, setUserName } = useUser();
   const router = useRouter();
 
   const handleLogout = () => {
     // In a real app, you'd clear the user session here
+    setUserType('buyer'); // default to buyer view
+    setUserName('Guest');
     router.push('/login');
   }
 
-  const navLinks = userType === 'buyer' ? buyerLinks : farmerLinks;
+  const getNavLinks = () => {
+    switch (userType) {
+      case 'farmer':
+        return farmerLinks;
+      case 'admin':
+        return adminLinks;
+      case 'buyer':
+      default:
+        return buyerLinks;
+    }
+  }
+
+  const navLinks = getNavLinks();
 
   return (
     <header className="bg-background/80 backdrop-blur-sm sticky top-0 z-40 border-b">
@@ -67,7 +86,7 @@ export default function Header() {
         </nav>
 
         <div className="flex items-center gap-4">
-            {userType === 'buyer' && <CartButton />}
+            {userType === 'buyer' && <CartButton suppressHydrationWarning />}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm" className='capitalize' suppressHydrationWarning>
@@ -85,6 +104,10 @@ export default function Header() {
                 <DropdownMenuItem onClick={() => setUserType('farmer')}>
                     <HelpingHand className="mr-2 h-4 w-4" />
                     <span>Farmer</span>
+                </DropdownMenuItem>
+                 <DropdownMenuItem onClick={() => setUserType('admin')}>
+                    <ShieldCheck className="mr-2 h-4 w-4" />
+                    <span>Admin</span>
                 </DropdownMenuItem>
                  <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout}>
