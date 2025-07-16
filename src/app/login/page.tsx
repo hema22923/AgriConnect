@@ -1,7 +1,7 @@
 
 'use client'
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import {
@@ -17,63 +17,59 @@ import { Leaf } from "lucide-react";
 import Link from "next/link";
 import { useUser } from '@/context/user-context';
 import { useToast } from '@/hooks/use-toast';
-import { auth, db } from '@/lib/firebase';
+import { auth } from '@/lib/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
 import { FirebaseError } from 'firebase/app';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { setUserType, setUserName, setUserEmail } = useUser();
+  const { userType, userName, isLoading } = useUser();
   const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    // This effect runs when the user context is loaded or changes.
+    // If the user is successfully logged in, redirect them.
+    if (!isLoading && userName !== 'Guest') {
+      toast({
+        title: 'Login Successful',
+        description: `Welcome back, ${userName}!`,
+      });
+
+      if (userType === 'farmer') {
+        router.push('/profile');
+      } else if (userType === 'admin') {
+        router.push('/admin');
+      } else {
+        router.push('/');
+      }
+    }
+  }, [userType, userName, isLoading, router]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const firebaseUser = userCredential.user;
-
-      const userDocRef = doc(db, 'users', firebaseUser.uid);
-      const userDoc = await getDoc(userDocRef);
-
-      if (userDoc.exists()) {
-        const userData = userDoc.data();
-        setUserType(userData.role);
-        setUserName(userData.fullName);
-        setUserEmail(userData.email);
-
-        toast({
-          title: 'Login Successful',
-          description: `Welcome back, ${userData.fullName}!`,
-        });
-
-        if (userData.role === 'farmer') {
-          router.push('/profile');
-        } else if (userData.role === 'admin') {
-          router.push('/admin');
-        } else {
-          router.push('/');
-        }
-      } else {
-         throw new Error("User data not found in Firestore.");
-      }
+      await signInWithEmailAndPassword(auth, email, password);
+      // The useEffect hook will handle redirection and success toast.
     } catch (error: any) {
        console.error("Login Error:", error);
-       if (error instanceof FirebaseError && error.code === 'unavailable') {
-         toast({
-            title: 'Network Error',
-            description: 'Failed to connect to the database. Please check your internet connection and try again.',
-            variant: 'destructive',
-          });
-       } else {
-         toast({
-          title: 'Invalid Credentials',
-          description: 'Please check your email and password.',
+       let errorMessage = 'An unexpected error occurred.';
+       if (error instanceof FirebaseError) {
+         if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+            errorMessage = 'Invalid email or password. Please try again.';
+         } else if (error.code === 'unavailable' || error.code === 'auth/network-request-failed') {
+            errorMessage = 'Failed to connect to the database. Please check your internet connection and try again.';
+         }
+       }
+       toast({
+          title: 'Login Failed',
+          description: errorMessage,
           variant: 'destructive',
         });
-       }
+        setIsSubmitting(false);
     }
   };
 
@@ -101,6 +97,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 suppressHydrationWarning
+                disabled={isSubmitting}
               />
             </div>
             <div className="grid gap-2">
@@ -120,10 +117,11 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 suppressHydrationWarning
+                disabled={isSubmitting}
               />
             </div>
-            <Button type="submit" className="w-full" suppressHydrationWarning>
-              Login
+            <Button type="submit" className="w-full" suppressHydrationWarning disabled={isSubmitting || isLoading}>
+              {isSubmitting ? 'Logging in...' : 'Login'}
             </Button>
           </form>
           <div className="mt-4 text-center text-sm">
