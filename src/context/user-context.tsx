@@ -9,6 +9,7 @@ import { doc, getDoc } from 'firebase/firestore';
 export type UserType = 'buyer' | 'farmer' | 'admin';
 
 interface UserContextType {
+  uid: string | null;
   userType: UserType;
   setUserType: (type: UserType) => void;
   userName: string;
@@ -21,6 +22,7 @@ interface UserContextType {
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
+  const [uid, setUid] = useState<string | null>(null);
   const [userType, setUserType] = useState<UserType>('buyer');
   const [userName, setUserName] = useState('Guest');
   const [userEmail, setUserEmail] = useState<string | null>(null);
@@ -32,6 +34,8 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         // User is signed in
         const userDocRef = doc(db, 'users', firebaseUser.uid);
         const userDoc = await getDoc(userDocRef);
+        setUid(firebaseUser.uid);
+
         if (userDoc.exists()) {
           const userData = userDoc.data();
           setUserName(userData.fullName);
@@ -45,6 +49,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         }
       } else {
         // User is signed out
+        setUid(null);
         setUserName('Guest');
         setUserType('buyer');
         setUserEmail(null);
@@ -57,7 +62,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   return (
-    <UserContext.Provider value={{ userType, setUserType, userName, setUserName, userEmail, setUserEmail, isLoading }}>
+    <UserContext.Provider value={{ uid, userType, setUserType, userName, setUserName, userEmail, setUserEmail, isLoading }}>
       {children}
     </UserContext.Provider>
   );

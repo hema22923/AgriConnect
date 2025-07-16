@@ -1,13 +1,28 @@
+
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import ProductCard from '@/components/product-card';
-import { products as allProducts } from '@/lib/data';
+import { fetchProducts } from '@/lib/data';
+import type { Product } from '@/lib/types';
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function Home() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const loadProducts = async () => {
+      setIsLoading(true);
+      const productsFromDb = await fetchProducts();
+      setAllProducts(productsFromDb);
+      setIsLoading(false);
+    };
+    loadProducts();
+  }, []);
 
   const filteredProducts = useMemo(() => {
     if (!searchTerm) {
@@ -16,7 +31,7 @@ export default function Home() {
     return allProducts.filter((product) =>
       product.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
-  }, [searchTerm]);
+  }, [searchTerm, allProducts]);
 
   return (
     <div className="space-y-8">
@@ -42,7 +57,19 @@ export default function Home() {
         </div>
       </div>
 
-      {filteredProducts.length > 0 ? (
+      {isLoading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {Array.from({ length: 8 }).map((_, i) => (
+             <div key={i} className="flex flex-col space-y-3">
+                <Skeleton className="h-[225px] w-full rounded-xl" />
+                <div className="space-y-2">
+                    <Skeleton className="h-4 w-[250px]" />
+                    <Skeleton className="h-4 w-[200px]" />
+                </div>
+            </div>
+          ))}
+        </div>
+      ) : filteredProducts.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredProducts.map((product) => (
             <ProductCard key={product.id} product={product} />
@@ -50,7 +77,7 @@ export default function Home() {
         </div>
       ) : (
         <div className="text-center py-16">
-          <p className="text-xl text-muted-foreground">No products found for &quot;{searchTerm}&quot;.</p>
+          <p className="text-xl text-muted-foreground">{searchTerm ? `No products found for "${searchTerm}".` : 'No products have been listed yet.'}</p>
         </div>
       )}
     </div>

@@ -5,14 +5,29 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { products } from "@/lib/data"
+import { fetchProducts } from "@/lib/data"
+import type { Product } from '@/lib/types'
 import Image from "next/image"
 import { Edit, PlusCircle, Package } from "lucide-react"
 import { useUser } from "@/context/user-context";
+import { useEffect, useState } from "react"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export default function ProfilePage() {
-    const { userName } = useUser();
-    const farmerProducts = products.filter(p => p.seller === "My Farm" || p.seller === userName);
+    const { userName, uid } = useUser();
+    const [farmerProducts, setFarmerProducts] = useState<Product[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const loadProducts = async () => {
+            if (!uid) return;
+            setIsLoading(true);
+            const allProducts = await fetchProducts();
+            setFarmerProducts(allProducts.filter(p => p.uid === uid));
+            setIsLoading(false);
+        };
+        loadProducts();
+    }, [uid]);
 
     return (
         <div className="max-w-4xl mx-auto space-y-8">
@@ -50,24 +65,36 @@ export default function ProfilePage() {
                 </CardHeader>
                 <CardContent>
                     <div className="space-y-4">
-                        {farmerProducts.map(product => (
-                            <div key={product.id} className="flex items-center gap-4 p-2 rounded-lg hover:bg-secondary/50">
-                                <Image src={product.image} alt={product.name} width={60} height={60} className="rounded-md object-cover" data-ai-hint={product.aiHint}/>
-                                <div className="flex-1">
-                                    <p className="font-semibold">{product.name}</p>
-                                    <p className="text-sm text-muted-foreground">${product.price.toFixed(2)}</p>
+                        {isLoading ? (
+                            Array.from({ length: 3 }).map((_, i) => (
+                                <div key={i} className="flex items-center gap-4 p-2">
+                                    <Skeleton className="h-16 w-16 rounded-md"/>
+                                    <div className="flex-1 space-y-2">
+                                        <Skeleton className="h-4 w-3/4"/>
+                                        <Skeleton className="h-4 w-1/4"/>
+                                    </div>
+                                    <Skeleton className="h-9 w-20 rounded-md"/>
                                 </div>
-                                <Button variant="outline" size="sm">Edit</Button>
+                            ))
+                        ) : farmerProducts.length > 0 ? (
+                            farmerProducts.map(product => (
+                                <div key={product.id} className="flex items-center gap-4 p-2 rounded-lg hover:bg-secondary/50">
+                                    <Image src={product.image} alt={product.name} width={60} height={60} className="rounded-md object-cover" data-ai-hint={product.aiHint}/>
+                                    <div className="flex-1">
+                                        <p className="font-semibold">{product.name}</p>
+                                        <p className="text-sm text-muted-foreground">${product.price.toFixed(2)}</p>
+                                    </div>
+                                    <Button variant="outline" size="sm">Edit</Button>
+                                </div>
+                            ))
+                        ) : (
+                             <div className="text-center text-muted-foreground py-8">
+                                <Package className="mx-auto h-12 w-12 mb-4" />
+                                <h3 className="text-xl font-semibold">No products yet</h3>
+                                <p>Click "Add New Product" to get started.</p>
                             </div>
-                        ))}
+                        )}
                     </div>
-                     {farmerProducts.length === 0 && (
-                        <div className="text-center text-muted-foreground py-8">
-                            <Package className="mx-auto h-12 w-12 mb-4" />
-                            <h3 className="text-xl font-semibold">No products yet</h3>
-                            <p>Click "Add New Product" to get started.</p>
-                        </div>
-                    )}
                 </CardContent>
             </Card>
         </div>

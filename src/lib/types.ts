@@ -1,6 +1,7 @@
 
 export type Product = {
   id: string;
+  uid: string; // ID of the farmer who created the product
   name: string;
   description: string;
   price: number;

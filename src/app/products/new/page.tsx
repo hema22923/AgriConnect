@@ -18,7 +18,7 @@ import Image from 'next/image';
 export default function NewProductPage() {
     const { toast } = useToast();
     const router = useRouter();
-    const { userName } = useUser();
+    const { userName, uid } = useUser();
     const [isLoading, setIsLoading] = useState(false);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
 
@@ -33,8 +33,17 @@ export default function NewProductPage() {
         }
     };
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        if (!uid) {
+            toast({
+                title: "Authentication Error",
+                description: "You must be logged in to add a product.",
+                variant: "destructive"
+            });
+            return;
+        }
+
         setIsLoading(true);
 
         const formData = new FormData(e.currentTarget);
@@ -43,26 +52,29 @@ export default function NewProductPage() {
         const price = parseFloat(formData.get('price') as string);
         const aiHint = formData.get('aiHint') as string || 'fresh produce';
 
+        // In a real app, you would upload the image to a storage service (like Firebase Storage)
+        // and get a URL back. For now, we'll continue using the placeholder or a data URL.
+        const imageUrl = imagePreview || `https://placehold.co/600x400.png`;
+
         const newProduct = {
-            id: `prod_${Date.now()}`,
+            uid,
             name,
             description,
             price,
-            image: imagePreview || `https://placehold.co/600x400`,
+            image: imageUrl,
             seller: userName,
             aiHint,
         };
 
-        addProduct(newProduct);
+        await addProduct(newProduct);
         
-        setTimeout(() => {
-            toast({
-                title: "Product Added!",
-                description: "Your new product has been successfully listed.",
-            });
-            router.push('/profile');
-            setIsLoading(false);
-        }, 1000);
+        toast({
+            title: "Product Added!",
+            description: "Your new product has been successfully listed.",
+        });
+        
+        router.push('/profile');
+        setIsLoading(false);
     }
 
     return (
