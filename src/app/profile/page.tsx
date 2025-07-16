@@ -6,27 +6,14 @@ import Link from "next/link"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { products } from "@/lib/data"
 import Image from "next/image"
-import { Edit, LogOut, PlusCircle, Package } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
-import { useRouter } from "next/navigation"
+import { Edit, PlusCircle, Package } from "lucide-react"
 
 export default function ProfilePage() {
     const farmerProducts = products.filter(p => p.seller === "My Farm");
-    const { toast } = useToast();
-    const router = useRouter();
-
-    const handleLogout = () => {
-        // In a real app, you would clear auth session here.
-        toast({
-            title: "Logged Out",
-            description: "You have been successfully logged out.",
-        });
-        router.push('/');
-    };
 
     return (
         <div className="max-w-4xl mx-auto space-y-8">
-            <div className="flex justify-between items-start gap-6">
+            <div className="flex justify-between items-start">
                 <div className="flex items-center gap-6">
                     <Avatar className="h-24 w-24 border-4 border-primary/20">
                         <AvatarImage src="https://placehold.co/100x100" alt="Farmer" data-ai-hint="farmer portrait" />
@@ -37,18 +24,12 @@ export default function ProfilePage() {
                         <p className="text-muted-foreground">Manage your farm and product listings.</p>
                     </div>
                 </div>
-                <div className="flex gap-2">
-                    <Button asChild variant="outline">
-                        <Link href="/profile/edit">
-                            <Edit className="mr-2 h-4 w-4"/>
-                            Edit Profile
-                        </Link>
-                    </Button>
-                    <Button variant="destructive" onClick={handleLogout}>
-                        <LogOut className="mr-2 h-4 w-4"/>
-                        Logout
-                    </Button>
-                </div>
+                <Button asChild variant="outline">
+                    <Link href="/profile/edit">
+                        <Edit className="mr-2 h-4 w-4"/>
+                        Edit Profile
+                    </Link>
+                </Button>
             </div>
 
             <Card>
