@@ -7,8 +7,21 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ShieldCheck } from 'lucide-react';
+import { useUser } from '@/context/user-context';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function AdminDashboardPage() {
+  const { userType } = useUser();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (userType !== 'admin') {
+      router.push('/login');
+    }
+  }, [userType, router]);
+
+
   return (
     <div className="max-w-6xl mx-auto">
        <div className="flex items-center gap-4 mb-8">

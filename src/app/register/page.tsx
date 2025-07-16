@@ -22,7 +22,7 @@ import { useToast } from "@/hooks/use-toast";
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { setUserType, setUserName } = useUser();
+  const { setUserType, setUserName, setUserEmail } = useUser();
   const { toast } = useToast();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -35,6 +35,7 @@ export default function RegisterPage() {
     addUser({ fullName, email, password, role });
     setUserType(role);
     setUserName(fullName);
+    setUserEmail(email);
 
     toast({
       title: 'Account Created!',

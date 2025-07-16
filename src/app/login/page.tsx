@@ -21,7 +21,7 @@ import { useToast } from '@/hooks/use-toast';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { setUserType, setUserName } = useUser();
+  const { setUserType, setUserName, setUserEmail } = useUser();
   const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -33,6 +33,7 @@ export default function LoginPage() {
     if (user && user.password === password) {
       setUserType(user.role);
       setUserName(user.fullName);
+      setUserEmail(user.email);
       
       toast({
         title: 'Login Successful',

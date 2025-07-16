@@ -25,3 +25,11 @@ export const addUser = (user: User) => {
   }
   users.push(user);
 };
+
+// Function to update a user
+export const updateUser = (email: string, updates: Partial<User>) => {
+    const userIndex = users.findIndex(u => u.email === email);
+    if (userIndex !== -1) {
+        users[userIndex] = { ...users[userIndex], ...updates };
+    }
+};
