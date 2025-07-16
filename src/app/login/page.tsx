@@ -1,7 +1,7 @@
 
 'use client'
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import {
@@ -18,13 +18,13 @@ import Link from "next/link";
 import { useUser } from '@/context/user-context';
 import { useToast } from '@/hooks/use-toast';
 import { auth, db } from '@/lib/firebase';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { FirebaseError } from 'firebase/app';
 import { doc, getDoc } from 'firebase/firestore';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { userType, userName, isLoading, setUserType, setUserName } = useUser();
+  const { isLoading, setUserType, setUserName } = useUser();
   const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -37,13 +37,11 @@ export default function LoginPage() {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // Fetch user role from Firestore
       const userDocRef = doc(db, 'users', user.uid);
       const userDoc = await getDoc(userDocRef);
       
       if (userDoc.exists()) {
         const userData = userDoc.data();
-        // Manually update context to ensure redirection logic has the correct userType
         setUserType(userData.role);
         setUserName(userData.fullName);
         
@@ -60,7 +58,13 @@ export default function LoginPage() {
           router.push('/');
         }
       } else {
-         throw new Error("User document not found in Firestore.");
+        // User exists in Auth, but not in Firestore. This is an inconsistent state.
+        await signOut(auth); // Sign out the user to prevent a broken state
+        toast({
+          title: 'Account Error',
+          description: "Your user profile could not be found. Please try signing up again.",
+          variant: 'destructive',
+        });
       }
 
     } catch (error: any) {
@@ -72,12 +76,16 @@ export default function LoginPage() {
          } else if (error.code === 'unavailable' || error.code === 'auth/network-request-failed') {
             errorMessage = 'Failed to connect. Please check your internet connection.';
          }
+       } else if (error.message.includes("User document not found")) {
+         errorMessage = "Your user profile data is missing. Please try signing up again."
        }
+
        toast({
           title: 'Login Failed',
           description: errorMessage,
           variant: 'destructive',
         });
+    } finally {
         setIsSubmitting(false);
     }
   };
