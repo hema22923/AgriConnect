@@ -20,6 +20,7 @@ import { useToast } from '@/hooks/use-toast';
 import { auth, db } from '@/lib/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
+import { FirebaseError } from 'firebase/app';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -60,11 +61,19 @@ export default function LoginPage() {
       }
     } catch (error: any) {
        console.error("Login Error:", error);
-       toast({
-        title: 'Invalid Credentials',
-        description: 'Please check your email and password.',
-        variant: 'destructive',
-      });
+       if (error instanceof FirebaseError && error.code === 'unavailable') {
+         toast({
+            title: 'Network Error',
+            description: 'Failed to connect to the database. Please check your internet connection and try again.',
+            variant: 'destructive',
+          });
+       } else {
+         toast({
+          title: 'Invalid Credentials',
+          description: 'Please check your email and password.',
+          variant: 'destructive',
+        });
+       }
     }
   };
 
