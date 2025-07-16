@@ -9,7 +9,6 @@ import {
 import CartButton from './cart-button';
 
 const navLinks = [
-  { href: '/', label: 'Products' },
   { href: '/orders', label: 'Orders' },
   { href: '/profile', label: 'Profile' },
 ];
