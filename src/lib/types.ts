@@ -9,6 +9,8 @@ export type Product = {
   seller: string;
   aiHint: string;
   stock: number;
+  rating: number;
+  reviewCount: number;
 };
 
 export type CartItem = {

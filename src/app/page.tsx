@@ -28,8 +28,9 @@ export default function Home() {
     const loadProducts = async () => {
       setIsLoading(true);
       const productsFromDb = await fetchProducts();
-      // Shuffle products on initial load
-      setAllProducts(shuffleArray(productsFromDb));
+      // Sort by rating desc, then shuffle for fairness among same-rated items
+      const sortedProducts = productsFromDb.sort((a, b) => b.rating - a.rating);
+      setAllProducts(shuffleArray(sortedProducts));
       setIsLoading(false);
     };
     loadProducts();

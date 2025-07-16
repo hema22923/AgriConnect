@@ -43,9 +43,14 @@ export const fetchProductById = async (id: string): Promise<Product | null> => {
 };
 
 // Function to add a new product to Firestore
-export const addProduct = async (product: Omit<Product, 'id'>) => {
+export const addProduct = async (product: Omit<Product, 'id' | 'rating' | 'reviewCount'>) => {
   try {
-    const docRef = await addDoc(collection(db, "products"), product);
+    const productWithRating = {
+        ...product,
+        rating: 0,
+        reviewCount: 0,
+    };
+    const docRef = await addDoc(collection(db, "products"), productWithRating);
     console.log("Product written with ID: ", docRef.id);
     await fetchProducts(); // Refresh the local cache
   } catch (e) {
