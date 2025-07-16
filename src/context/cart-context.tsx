@@ -50,6 +50,11 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         }
         return [...prevCart, { product, quantity: product.stock }];
       }
+      
+      toast({
+          title: "Added to cart",
+          description: `${product.name} has been added to your cart.`,
+      });
 
       if (existingItem) {
         return prevCart.map((item) =>
@@ -60,13 +65,6 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       }
       return [...prevCart, { product, quantity }];
     });
-
-    if (newQuantity <= product.stock) {
-        toast({
-            title: "Added to cart",
-            description: `${product.name} has been added to your cart.`,
-        });
-    }
   };
 
   const removeFromCart = (productId: string) => {
