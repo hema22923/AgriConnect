@@ -31,7 +31,7 @@ export default function RegisterPage() {
           <div className="grid gap-4">
             <div className="grid gap-2">
               <Label htmlFor="full-name">Full Name</Label>
-              <Input id="full-name" placeholder="John Doe" required />
+              <Input id="full-name" placeholder="John Doe" required suppressHydrationWarning />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>
@@ -40,11 +40,12 @@ export default function RegisterPage() {
                 type="email"
                 placeholder="m@example.com"
                 required
+                suppressHydrationWarning
               />
             </div>
             <div className="grid gap-2">
                 <Label htmlFor="password">Password</Label>
-                <Input id="password" type="password" required />
+                <Input id="password" type="password" required suppressHydrationWarning />
             </div>
             <div className="grid gap-2">
               <Label>Register as a</Label>
@@ -59,7 +60,7 @@ export default function RegisterPage() {
                 </div>
               </RadioGroup>
             </div>
-            <Button type="submit" className="w-full">
+            <Button type="submit" className="w-full" suppressHydrationWarning>
               Create account
             </Button>
           </div>
