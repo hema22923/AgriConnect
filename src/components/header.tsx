@@ -1,3 +1,5 @@
+'use client';
+
 import Link from 'next/link';
 import { Leaf, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -7,11 +9,23 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet';
 import CartButton from './cart-button';
+import { useEffect, useState } from 'react';
 
 const navLinks = [
   { href: '/orders', label: 'Orders' },
   { href: '/profile', label: 'Profile' },
 ];
+
+const ClientOnlyCartButton = () => {
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  return isClient ? <CartButton /> : <div className="h-10 w-10" />;
+}
+
 
 export default function Header() {
   return (
@@ -35,7 +49,7 @@ export default function Header() {
           ))}
         </nav>
         <div className="flex items-center gap-4">
-            <CartButton />
+            <ClientOnlyCartButton />
             <div className="md:hidden">
                  <Sheet>
                     <SheetTrigger asChild>
