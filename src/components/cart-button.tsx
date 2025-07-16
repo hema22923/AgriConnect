@@ -20,7 +20,7 @@ export default function CartButton() {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="icon" className="relative">
+        <Button variant="outline" size="icon" className="relative" suppressHydrationWarning>
           <ShoppingCart className="h-5 w-5" />
           {itemCount > 0 && (
             <Badge

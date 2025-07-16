@@ -70,7 +70,7 @@ export default function Header() {
             {userType === 'buyer' && <CartButton />}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className='capitalize'>
+                <Button variant="outline" size="sm" className='capitalize' suppressHydrationWarning>
                     <User className="mr-2 h-4 w-4" />
                     {userType}
                 </Button>
