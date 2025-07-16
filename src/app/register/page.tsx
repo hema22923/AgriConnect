@@ -55,11 +55,19 @@ export default function RegisterPage() {
       }
     } catch (error: any) {
       console.error("Registration Error:", error);
-      toast({
-        title: 'Registration Failed',
-        description: error.message || 'An unexpected error occurred.',
-        variant: 'destructive',
-      });
+      if (error.code === 'auth/email-already-in-use') {
+        toast({
+          title: 'Registration Failed',
+          description: 'This email is already registered. Please log in.',
+          variant: 'destructive',
+        });
+      } else {
+        toast({
+          title: 'Registration Failed',
+          description: error.message || 'An unexpected error occurred.',
+          variant: 'destructive',
+        });
+      }
     }
   };
 
