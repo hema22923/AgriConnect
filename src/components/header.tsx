@@ -2,7 +2,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Leaf, Menu, LogOut, User, Package, ShoppingCart, BarChart3, HelpingHand, ShieldCheck, UserCircle } from 'lucide-react';
+import { Leaf, Menu, LogOut, Package, ShoppingCart, BarChart3, ShieldCheck, User, LogIn, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -17,10 +17,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { useUser, UserType } from '@/context/user-context';
+import { useUser } from '@/context/user-context';
 import { useRouter } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import CartButton from './cart-button';
+import { auth } from '@/lib/firebase';
+import { signOut } from 'firebase/auth';
 
 
 const buyerLinks = [
@@ -40,13 +42,14 @@ const adminLinks = [
 
 
 export default function Header() {
-  const { userType, userName, setUserName, setUserType } = useUser();
+  const { userType, userName, setUserType, setUserName, setUserEmail } = useUser();
   const router = useRouter();
 
-  const handleLogout = () => {
-    // In a real app, you'd clear the user session here
+  const handleLogout = async () => {
+    await signOut(auth);
     setUserType('buyer'); // default to buyer view
     setUserName('Guest');
+    setUserEmail(null);
     router.push('/login');
   }
 
@@ -86,30 +89,48 @@ export default function Header() {
           ))}
         </nav>
 
-        <div className="flex items-center gap-4">
-           {userType === 'buyer' && <CartButton />}
-           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-                <Avatar>
-                    <AvatarImage src={`https://i.pravatar.cc/40?u=${userName}`} />
-                    <AvatarFallback>{userName ? userName.charAt(0).toUpperCase() : 'G'}</AvatarFallback>
-                </Avatar>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56" align="end" forceMount>
-              <DropdownMenuLabel className="font-normal">
-                <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none" suppressHydrationWarning>{userName}</p>
-                </div>
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleLogout}>
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>Log out</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+        <div className="flex items-center gap-2">
+           {userType === 'buyer' && userName !== 'Guest' && <CartButton />}
+           
+           {userName === 'Guest' ? (
+             <div className="hidden md:flex items-center gap-2">
+                <Button asChild variant="ghost">
+                    <Link href="/login">
+                        <LogIn className="mr-2 h-4 w-4" />
+                        Login
+                    </Link>
+                </Button>
+                <Button asChild>
+                    <Link href="/register">
+                         <UserPlus className="mr-2 h-4 w-4" />
+                        Sign Up
+                    </Link>
+                </Button>
+             </div>
+           ) : (
+             <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                  <Avatar>
+                      <AvatarImage src={`https://i.pravatar.cc/40?u=${userName}`} />
+                      <AvatarFallback>{userName ? userName.charAt(0).toUpperCase() : 'G'}</AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56" align="end" forceMount>
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none" suppressHydrationWarning>{userName}</p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Log out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+           )}
 
           <div className="md:hidden">
             <Sheet>
@@ -137,6 +158,24 @@ export default function Header() {
                       {link.label}
                     </Link>
                   ))}
+                  <DropdownMenuSeparator />
+                   {userName === 'Guest' ? (
+                     <>
+                        <Link href="/login" className="flex w-full items-center py-2 text-lg font-semibold">
+                            <LogIn className="mr-2 h-5 w-5" />
+                            Login
+                        </Link>
+                         <Link href="/register" className="flex w-full items-center py-2 text-lg font-semibold">
+                            <UserPlus className="mr-2 h-5 w-5" />
+                            Sign Up
+                        </Link>
+                     </>
+                   ) : (
+                     <button onClick={handleLogout} className="flex w-full items-center py-2 text-lg font-semibold text-left">
+                        <LogOut className="mr-2 h-5 w-5" />
+                        Logout
+                     </button>
+                   )}
                 </div>
               </SheetContent>
             </Sheet>
