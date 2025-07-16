@@ -94,20 +94,20 @@ export default function NewProductPage() {
                     <CardContent className="p-6 space-y-6">
                         <div className="space-y-2">
                             <Label htmlFor="name">Product Name</Label>
-                            <Input id="name" name="name" placeholder="e.g., Organic Strawberries" required/>
+                            <Input id="name" name="name" placeholder="e.g., Organic Strawberries" required suppressHydrationWarning/>
                         </div>
                          <div className="space-y-2">
                             <Label htmlFor="description">Description</Label>
-                            <Textarea id="description" name="description" placeholder="Describe your product..." required/>
+                            <Textarea id="description" name="description" placeholder="Describe your product..." required suppressHydrationWarning/>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                              <div className="space-y-2">
                                 <Label htmlFor="price">Price ($)</Label>
-                                <Input id="price" name="price" type="number" step="0.01" placeholder="e.g., 5.99" required/>
+                                <Input id="price" name="price" type="number" step="0.01" placeholder="e.g., 5.99" required suppressHydrationWarning/>
                             </div>
                              <div className="space-y-2">
                                 <Label htmlFor="aiHint">Image AI Hint</Label>
-                                <Input id="aiHint" name="aiHint" placeholder="e.g., fresh strawberries" required/>
+                                <Input id="aiHint" name="aiHint" placeholder="e.g., fresh strawberries" required suppressHydrationWarning/>
                             </div>
                         </div>
                         <div className="space-y-2">
@@ -120,10 +120,10 @@ export default function NewProductPage() {
                                         <ImageIcon className="h-8 w-8 text-muted-foreground" />
                                     )}
                                 </div>
-                                <Input id="image" type="file" onChange={handleImageChange} accept="image/*" className="flex-1"/>
+                                <Input id="image" type="file" onChange={handleImageChange} accept="image/*" className="flex-1" suppressHydrationWarning/>
                             </div>
                         </div>
-                        <Button type="submit" disabled={isLoading} className="w-full h-11 bg-accent hover:bg-accent/90">
+                        <Button type="submit" disabled={isLoading} className="w-full h-11 bg-accent hover:bg-accent/90" suppressHydrationWarning>
                             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                             {isLoading ? 'Adding Product...' : 'Add Product'}
                         </Button>
