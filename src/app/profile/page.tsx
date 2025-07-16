@@ -5,12 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { fetchProducts } from "@/lib/data"
+import { fetchProducts, orders } from "@/lib/data"
 import type { Product } from '@/lib/types'
 import Image from "next/image"
-import { Edit, PlusCircle, Package, LogOut, ShoppingCart } from "lucide-react"
+import { Edit, PlusCircle, Package, LogOut, ShoppingCart, DollarSign } from "lucide-react"
 import { useUser } from "@/context/user-context";
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo } from "react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useRouter } from "next/navigation"
 import { auth } from "@/lib/firebase"
@@ -36,6 +36,27 @@ export default function ProfilePage() {
             setIsLoading(false);
         };
         loadProducts();
+    }, [uid]);
+
+    const farmerStats = useMemo(() => {
+        if (!uid) return { totalOrders: 0, totalRevenue: 0 };
+
+        const farmerOrderItems = orders
+            .flatMap(order => order.items)
+            .filter(item => item.product.uid === uid);
+
+        const farmerOrders = orders.filter(order => 
+            order.items.some(item => item.product.uid === uid)
+        );
+
+        const totalRevenue = farmerOrderItems.reduce((acc, item) => {
+            return acc + (item.product.price * item.quantity);
+        }, 0);
+
+        return {
+            totalOrders: farmerOrders.length,
+            totalRevenue: totalRevenue,
+        };
     }, [uid]);
 
     return (
@@ -74,7 +95,7 @@ export default function ProfilePage() {
                         <ShoppingCart className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">5</div>
+                        <div className="text-2xl font-bold">{farmerStats.totalOrders}</div>
                         <p className="text-xs text-muted-foreground">
                             Based on buyer purchases
                         </p>
@@ -83,14 +104,14 @@ export default function ProfilePage() {
                  <Card>
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="text-sm font-medium">
-                            Listed Products
+                            Total Revenue
                         </CardTitle>
-                        <Package className="h-4 w-4 text-muted-foreground" />
+                        <DollarSign className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{farmerProducts.length}</div>
+                        <div className="text-2xl font-bold">${farmerStats.totalRevenue.toFixed(2)}</div>
                         <p className="text-xs text-muted-foreground">
-                            Currently available for sale
+                            From completed orders
                         </p>
                     </CardContent>
                 </Card>
@@ -99,7 +120,10 @@ export default function ProfilePage() {
             <Card>
                 <CardHeader>
                     <div className="flex justify-between items-center">
-                        <CardTitle className="font-headline">Your Products</CardTitle>
+                        <div>
+                            <CardTitle className="font-headline">Your Products</CardTitle>
+                            <CardDescription>You have {farmerProducts.length} product(s) listed.</CardDescription>
+                        </div>
                          <Button asChild>
                             <Link href="/products/new">
                                 <PlusCircle className="mr-2 h-4 w-4"/>
@@ -107,7 +131,6 @@ export default function ProfilePage() {
                             </Link>
                         </Button>
                     </div>
-                    <CardDescription>Manage your product listings below.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <div className="space-y-4">
