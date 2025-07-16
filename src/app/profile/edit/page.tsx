@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from "react";
@@ -11,21 +12,28 @@ import { ArrowLeft, Save, Image as ImageIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useUser } from "@/context/user-context";
 
 export default function EditProfilePage() {
     const { toast } = useToast();
     const router = useRouter();
+    const { userName, setUserName } = useUser();
     const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        // Simulate form submission
+        const formData = new FormData(e.currentTarget);
+        const farmName = formData.get('farmName') as string;
+
+        if (farmName) {
+            setUserName(farmName);
+        }
+        
         toast({
             title: "Profile Updated!",
             description: "Your profile information has been saved.",
         });
-        // In a real app, you would handle image upload and save the URL.
-        // For now, we just navigate back.
+        
         router.push('/profile');
     }
 
@@ -57,8 +65,8 @@ export default function EditProfilePage() {
                     <CardContent className="p-6 space-y-6">
                         <div className="flex items-center gap-6">
                             <Avatar className="h-24 w-24 border-4 border-primary/20">
-                                <AvatarImage src={imagePreview || "https://placehold.co/100x100"} alt="Farmer" />
-                                <AvatarFallback>MF</AvatarFallback>
+                                <AvatarImage src={imagePreview || `https://i.pravatar.cc/100?u=${userName}`} alt="Farmer" />
+                                <AvatarFallback>{userName.charAt(0)}</AvatarFallback>
                             </Avatar>
                             <div className="space-y-2 flex-1">
                                 <Label htmlFor="farmImage">Farm Image</Label>
@@ -69,11 +77,11 @@ export default function EditProfilePage() {
 
                         <div className="space-y-2">
                             <Label htmlFor="farmName">Farm Name</Label>
-                            <Input id="farmName" defaultValue="" placeholder="e.g., Green Valley Farms" required/>
+                            <Input id="farmName" name="farmName" defaultValue={userName} placeholder="e.g., Green Valley Farms" required/>
                         </div>
                          <div className="space-y-2">
                             <Label htmlFor="description">Farm Description</Label>
-                            <Textarea id="description" defaultValue="" placeholder="Tell us about your farm..." required/>
+                            <Textarea id="description" name="description" defaultValue="" placeholder="Tell us about your farm..." required/>
                         </div>
                         <Button type="submit" className="w-full h-11">
                             <Save className="mr-2 h-4 w-4" />
