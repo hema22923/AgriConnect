@@ -21,6 +21,9 @@ interface UserContextType {
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
+// Helper function to introduce a small delay
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
 export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [uid, setUid] = useState<string | null>(null);
   const [userType, setUserType] = useState<UserType>('buyer');
@@ -32,6 +35,8 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: FirebaseUser | null) => {
       if (firebaseUser) {
         // User is signed in
+        // Add a small delay to allow Firestore connection to be established
+        await delay(100); 
         const userDocRef = doc(db, 'users', firebaseUser.uid);
         const userDoc = await getDoc(userDocRef);
         setUid(firebaseUser.uid);
