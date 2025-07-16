@@ -26,12 +26,6 @@ export default function ProfilePage() {
                 <CardHeader>
                     <div className="flex justify-between items-center">
                         <CardTitle className="font-headline">Your Products</CardTitle>
-                        <Button asChild>
-                            <Link href="/products/new">
-                                <PlusCircle className="mr-2 h-4 w-4"/>
-                                Add New Product
-                            </Link>
-                        </Button>
                     </div>
                     <CardDescription>Manage your product listings below.</CardDescription>
                 </CardHeader>
