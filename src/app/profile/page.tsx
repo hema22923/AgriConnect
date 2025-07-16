@@ -4,22 +4,30 @@ import Link from "next/link"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { products } from "@/lib/data"
 import Image from "next/image"
-import { PlusCircle } from "lucide-react"
+import { PlusCircle, Edit } from "lucide-react"
 
 export default function ProfilePage() {
     const farmerProducts = products.filter(p => p.seller === "My Farm");
 
     return (
         <div className="max-w-4xl mx-auto space-y-8">
-            <div className="flex items-center gap-6">
-                <Avatar className="h-24 w-24 border-4 border-primary/20">
-                    <AvatarImage src="https://placehold.co/100x100" alt="Farmer" data-ai-hint="farmer portrait" />
-                    <AvatarFallback>MF</AvatarFallback>
-                </Avatar>
-                <div>
-                    <h1 className="text-3xl font-bold font-headline">My Farm</h1>
-                    <p className="text-muted-foreground">Your farm description goes here.</p>
+            <div className="flex justify-between items-start gap-6">
+                <div className="flex items-center gap-6">
+                    <Avatar className="h-24 w-24 border-4 border-primary/20">
+                        <AvatarImage src="https://placehold.co/100x100" alt="Farmer" data-ai-hint="farmer portrait" />
+                        <AvatarFallback>MF</AvatarFallback>
+                    </Avatar>
+                    <div>
+                        <h1 className="text-3xl font-bold font-headline">My Farm</h1>
+                        <p className="text-muted-foreground">Your farm description will appear here.</p>
+                    </div>
                 </div>
+                <Button asChild variant="outline">
+                    <Link href="/profile/edit">
+                        <Edit className="mr-2 h-4 w-4"/>
+                        Edit Profile
+                    </Link>
+                </Button>
             </div>
 
             <Card>
@@ -45,12 +53,6 @@ export default function ProfilePage() {
                      {farmerProducts.length === 0 && (
                         <div className="text-center text-muted-foreground py-8">
                             <p>You haven&apos;t added any products yet.</p>
-                             <Button asChild variant="secondary" className="mt-4">
-                                <Link href="/products/new">
-                                    <PlusCircle className="mr-2 h-4 w-4"/>
-                                    Add Your First Product
-                                </Link>
-                            </Button>
                         </div>
                     )}
                 </CardContent>
