@@ -9,6 +9,16 @@ import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
+// Helper function to shuffle an array
+const shuffleArray = <T,>(array: T[]): T[] => {
+  const newArray = [...array];
+  for (let i = newArray.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+  }
+  return newArray;
+};
+
 export default function Home() {
   const [searchTerm, setSearchTerm] = useState('');
   const [allProducts, setAllProducts] = useState<Product[]>([]);
@@ -18,7 +28,8 @@ export default function Home() {
     const loadProducts = async () => {
       setIsLoading(true);
       const productsFromDb = await fetchProducts();
-      setAllProducts(productsFromDb);
+      // Shuffle products on initial load
+      setAllProducts(shuffleArray(productsFromDb));
       setIsLoading(false);
     };
     loadProducts();
