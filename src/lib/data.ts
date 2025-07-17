@@ -117,7 +117,6 @@ export const subscribeToOrders = (userId: string, callback: (orders: Order[]) =>
 export const fetchOrdersForFarmer = async (farmerId: string): Promise<Order[]> => {
     try {
         const ordersCollection = collection(db, 'orders');
-        const q = query(ordersCollection, where("items", "array-contains-any", [{ sellerId: farmerId }]));
         const allOrdersSnapshot = await getDocs(ordersCollection);
 
         const farmerOrders: Order[] = [];
@@ -138,11 +137,10 @@ export const fetchOrdersForFarmer = async (farmerId: string): Promise<Order[]> =
 // Real-time subscription to a farmer's orders
 export const subscribeToFarmerOrders = (farmerId: string, callback: (orders: Order[]) => void) => {
     const ordersCollection = collection(db, 'orders');
-    const q = query(ordersCollection, where('items.sellerId', '==', farmerId)); // This query won't work as intended.
     
-    // Firestore can't query inside an array of objects like this. We fetch all and filter client-side.
-    // This is not efficient for large scale, but acceptable for this project's scope.
-    // For a production app, a Cloud Function would be used to denormalize data.
+    // Firestore can't query inside an array of objects like this efficiently at scale. 
+    // We fetch all and filter client-side. This is acceptable for this project's scope.
+    // For a production app, a Cloud Function would be used to denormalize data for more efficient querying.
     const unsubscribe = onSnapshot(collection(db, 'orders'), (snapshot) => {
         const farmerOrders: Order[] = [];
         snapshot.forEach(doc => {

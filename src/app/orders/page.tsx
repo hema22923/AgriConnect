@@ -11,7 +11,7 @@ import { Package, ChevronRight, Loader2, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUser } from '@/context/user-context';
 import type { Order } from '@/lib/types';
-import { fetchOrdersForUser, updateProductRating, updateOrderItemAsRated, subscribeToOrders } from '@/lib/data';
+import { updateProductRating, updateOrderItemAsRated, subscribeToOrders } from '@/lib/data';
 import {
   Dialog,
   DialogContent,
@@ -177,6 +177,7 @@ export default function OrdersPage() {
                     'secondary'
                   }
                   className={cn(
+                    'capitalize',
                     order.status === 'Delivered' && 'bg-green-600 text-white',
                     order.status === 'Pending' && 'bg-yellow-500 text-white',
                     order.status === 'Shipped' && 'bg-blue-500 text-white'
