@@ -21,6 +21,7 @@ import {
   DialogFooter
 } from "@/components/ui/dialog";
 import { useToast } from '@/hooks/use-toast';
+import type { Timestamp } from 'firebase/firestore';
 
 function RatingDialog({ open, onOpenChange, orderId, item, onRatingSubmitted }: { open: boolean, onOpenChange: (open: boolean) => void, orderId: string, item: any, onRatingSubmitted: (orderId: string, productId: string) => void }) {
   const [rating, setRating] = useState(0);
@@ -138,7 +139,7 @@ export default function OrdersPage() {
                 <CardHeader className="flex flex-row justify-between items-center bg-secondary/30 p-4">
                     <div className='space-y-1'>
                         <CardTitle className="text-lg">Order #{order.id.slice(0, 8)}</CardTitle>
-                        <CardDescription>Placed on {order.date ? new Date(order.date.seconds * 1000).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Date not available'}</CardDescription>
+                        <CardDescription>Placed on {order.date ? new Date((order.date as Timestamp).seconds * 1000).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Date not available'}</CardDescription>
                     </div>
                     <div className='text-right'>
                         <p className="text-sm text-muted-foreground">Total</p>

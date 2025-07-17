@@ -1,7 +1,7 @@
 
 import type { Product, Order, User } from './types';
 import { db } from './firebase';
-import { collection, addDoc, doc, updateDoc, setDoc, getDocs, getDoc, deleteDoc, query, where, writeBatch, runTransaction } from 'firebase/firestore';
+import { collection, addDoc, doc, updateDoc, setDoc, getDocs, getDoc, deleteDoc, query, where, writeBatch, runTransaction, Timestamp } from 'firebase/firestore';
 
 
 // This will hold products fetched from Firestore
@@ -89,7 +89,7 @@ export const fetchOrdersForUser = async (userId: string): Promise<Order[]> => {
         const orderSnapshot = await getDocs(q);
         const userOrders = orderSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order));
         // Sort by date descending
-        return userOrders.sort((a, b) => b.date.seconds - a.date.seconds);
+        return userOrders.sort((a, b) => (b.date as Timestamp).seconds - (a.date as Timestamp).seconds);
     } catch (e) {
         console.error("Error fetching user orders: ", e);
         return [];
@@ -99,21 +99,23 @@ export const fetchOrdersForUser = async (userId: string): Promise<Order[]> => {
 // Function to fetch orders for a specific farmer
 export const fetchOrdersForFarmer = async (farmerId: string): Promise<Order[]> => {
     try {
+        // Firestore does not support querying for a value within an array of objects directly in a scalable way.
+        // The correct approach is to fetch all orders and filter them on the client-side or use a more complex data structure/Cloud Function.
+        // For this app, client-side filtering is sufficient.
         const ordersCollection = collection(db, 'orders');
-        const q = query(ordersCollection, where("items", "array-contains-any", [{sellerId: farmerId}]));
-
-        const allOrdersSnapshot = await getDocs(collection(db, 'orders'));
+        const allOrdersSnapshot = await getDocs(ordersCollection);
 
         const farmerOrders: Order[] = [];
         allOrdersSnapshot.forEach(doc => {
             const order = { id: doc.id, ...doc.data() } as Order;
+            // Check if any item in the order belongs to the farmer
             if (order.items.some(item => item.sellerId === farmerId)) {
                 farmerOrders.push(order);
             }
         });
 
         // Sort by date descending
-        return farmerOrders.sort((a, b) => b.date.seconds - a.date.seconds);
+        return farmerOrders.sort((a, b) => (b.date as Timestamp).seconds - (a.date as Timestamp).seconds);
     } catch (e) {
         console.error("Error fetching farmer orders: ", e);
         return [];

@@ -51,7 +51,7 @@ export default function ProfilePage() {
         
         const totalRevenue = farmerOrders.reduce((acc, order) => {
             const farmerItemsTotal = order.items
-                .filter(item => item.sellerId === uid)
+                .filter(item => item.sellerId === uid) // Only include items sold by this farmer
                 .reduce((itemAcc, item) => itemAcc + (item.price * item.quantity), 0);
             return acc + farmerItemsTotal;
         }, 0);
