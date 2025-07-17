@@ -79,7 +79,7 @@ function FarmerOrderCard({ order, onUpdateStatus }: { order: Order; onUpdateStat
          <CardFooter className="flex justify-end gap-2">
             {isUpdating ? (
               <Button disabled size="sm"><Loader2 className="h-4 w-4 animate-spin mr-2" />Updating...</Button>
-            ) : order.status === 'Pending' ? (
+            ) : order.status?.toLowerCase() === 'pending' ? (
                 <>
                 <Button size="sm" variant="outline" className="text-red-600 border-red-600 hover:bg-red-50 hover:text-red-700" onClick={() => handleUpdate('Cancelled')}>
                     <XCircle className="h-4 w-4 mr-2" />
