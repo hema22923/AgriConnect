@@ -24,16 +24,14 @@ export default function CheckoutPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isOrderPlaced, setIsOrderPlaced] = useState(false);
 
-  // Initialize state directly to prevent hydration mismatch
-  const [shippingInfo, setShippingInfo] = useState(() => ({
-    name: userName !== 'Guest' ? userName : '',
-    email: userEmail || '',
-    address: address || '',
-    city: city || '',
-    zip: zip || '',
-  }));
+  const [shippingInfo, setShippingInfo] = useState({
+    name: '',
+    email: '',
+    address: '',
+    city: '',
+    zip: '',
+  });
 
-  // Effect to update form if user context changes after initial load
   useEffect(() => {
     if (uid) {
         setShippingInfo({
@@ -168,23 +166,23 @@ export default function CheckoutPage() {
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label htmlFor="name">Full Name</Label>
-              <Input id="name" placeholder="John Doe" value={shippingInfo.name} onChange={handleInputChange} required />
+              <Input id="name" placeholder="John Doe" value={shippingInfo.name} onChange={handleInputChange} required suppressHydrationWarning />
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="john@example.com" value={shippingInfo.email} onChange={handleInputChange} required />
+              <Input id="email" type="email" placeholder="john@example.com" value={shippingInfo.email} onChange={handleInputChange} required suppressHydrationWarning />
             </div>
             <div className="md:col-span-2 space-y-2">
               <Label htmlFor="address">Street Address</Label>
-              <Input id="address" placeholder="123 Farmhouse Lane" value={shippingInfo.address} onChange={handleInputChange} required />
+              <Input id="address" placeholder="123 Farmhouse Lane" value={shippingInfo.address} onChange={handleInputChange} required suppressHydrationWarning />
             </div>
             <div className="space-y-2">
               <Label htmlFor="city">City</Label>
-              <Input id="city" placeholder="Green Valley" value={shippingInfo.city} onChange={handleInputChange} required />
+              <Input id="city" placeholder="Green Valley" value={shippingInfo.city} onChange={handleInputChange} required suppressHydrationWarning />
             </div>
             <div className="space-y-2">
               <Label htmlFor="zip">ZIP Code</Label>
-              <Input id="zip" placeholder="12345" value={shippingInfo.zip} onChange={handleInputChange} required />
+              <Input id="zip" placeholder="12345" value={shippingInfo.zip} onChange={handleInputChange} required suppressHydrationWarning />
             </div>
           </CardContent>
            <CardHeader className="pt-0">
@@ -214,7 +212,7 @@ export default function CheckoutPage() {
                 </div>
               </CardContent>
               <CardFooter>
-                 <Button type="submit" disabled={isProcessing} className="w-full h-12 text-lg bg-accent hover:bg-accent/90">
+                 <Button type="submit" disabled={isProcessing} className="w-full h-12 text-lg bg-accent hover:bg-accent/90" suppressHydrationWarning>
                     {isProcessing ? <Loader2 className="mr-2 h-6 w-6 animate-spin" /> : null}
                     {isProcessing ? 'Processing...' : `Place Order`}
                  </Button>
