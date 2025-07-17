@@ -18,7 +18,7 @@ import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 
 export default function ProfilePage() {
-    const { userName, uid, setUserType, setUserName: setGlobalUserName } = useUser();
+    const { userName, uid, setUserType, setGlobalUserName } = useUser();
     const router = useRouter();
     const [farmerProducts, setFarmerProducts] = useState<Product[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -108,7 +108,7 @@ export default function ProfilePage() {
                         <DollarSign className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">${farmerStats.totalRevenue.toFixed(2)}</div>
+                        <div className="text-2xl font-bold">₹{farmerStats.totalRevenue.toFixed(2)}</div>
                         <p className="text-xs text-muted-foreground">
                             From completed orders
                         </p>
@@ -150,7 +150,7 @@ export default function ProfilePage() {
                                     <Image src={product.image} alt={product.name} width={60} height={60} className="rounded-md object-cover" data-ai-hint={product.aiHint}/>
                                     <div className="flex-1">
                                         <p className="font-semibold">{product.name}</p>
-                                        <p className="text-sm text-muted-foreground">${product.price.toFixed(2)} / kg</p>
+                                        <p className="text-sm text-muted-foreground">₹{product.price.toFixed(2)} / kg</p>
                                         {product.stock > 0 ? (
                                             <p className="text-xs text-muted-foreground">{product.stock} kg in stock</p>
                                         ) : (

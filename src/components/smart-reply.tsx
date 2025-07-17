@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -22,7 +23,7 @@ export default function SmartReply({ product, buyerQuestion }: SmartReplyProps) 
   const handleGenerateResponse = async () => {
     setIsLoading(true);
     try {
-      const productListing = `Product: ${product.name}\nDescription: ${product.description}\nPrice: $${product.price}`;
+      const productListing = `Product: ${product.name}\nDescription: ${product.description}\nPrice: ₹${product.price}`;
       const result = await generateSuggestedResponse({ productListing, buyerQuestion });
       setSuggestedResponse(result.suggestedResponse);
     } catch (error) {

@@ -64,7 +64,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         </div>
       </CardContent>
       <CardFooter className="p-4 pt-0 flex justify-between items-center">
-        <p className="text-xl font-bold text-primary">${product.price.toFixed(2)} / kg</p>
+        <p className="text-xl font-bold text-primary">₹{product.price.toFixed(2)} / kg</p>
         <Button size="sm" onClick={() => addToCart(product)} disabled={isOutOfStock}>
           <ShoppingCart className="mr-2 h-4 w-4" />
           {isOutOfStock ? 'Out of Stock' : 'Add to Cart'}

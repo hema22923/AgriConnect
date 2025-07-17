@@ -57,7 +57,7 @@ export default function CartButton() {
                       <h5 className="font-medium">{item.product.name}</h5>
                       <div className="flex items-center justify-between">
                          <p className="text-sm text-muted-foreground">
-                            ${item.product.price.toFixed(2)} / kg
+                            ₹{item.product.price.toFixed(2)} / kg
                          </p>
                          <div className="flex items-center gap-2">
                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => updateQuantity(item.product.id, item.quantity - 1)}>
@@ -81,7 +81,7 @@ export default function CartButton() {
             <div className="p-4 space-y-4">
               <div className="flex justify-between font-semibold">
                 <span>Total</span>
-                <span>${cartTotal.toFixed(2)}</span>
+                <span>₹{cartTotal.toFixed(2)}</span>
               </div>
               <Button asChild className="w-full bg-accent hover:bg-accent/90">
                 <Link href="/checkout">Go to Checkout</Link>

@@ -141,7 +141,7 @@ export default function OrdersPage() {
                     </div>
                     <div className='text-right'>
                         <p className="text-sm text-muted-foreground">Total</p>
-                        <p className="font-bold text-lg text-primary">${order.total.toFixed(2)}</p>
+                        <p className="font-bold text-lg text-primary">₹{order.total.toFixed(2)}</p>
                     </div>
                 </CardHeader>
               <CardContent className="p-4">
@@ -150,7 +150,7 @@ export default function OrdersPage() {
                     <div key={index} className="flex justify-between items-center">
                       <div>
                         <p>{item.name} <span className="text-muted-foreground">x {item.quantity} kg</span></p>
-                         <p className="font-semibold text-sm">${(item.price * item.quantity).toFixed(2)}</p>
+                         <p className="font-semibold text-sm">₹{(item.price * item.quantity).toFixed(2)}</p>
                       </div>
                       <Button
                         variant="outline"

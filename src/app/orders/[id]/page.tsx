@@ -44,7 +44,7 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
                         <p className="font-semibold">{item.product.name}</p>
                         <p className="text-sm text-muted-foreground">{item.quantity} kg</p>
                       </div>
-                      <p className="font-semibold">${(item.product.price * item.quantity).toFixed(2)}</p>
+                      <p className="font-semibold">₹{(item.product.price * item.quantity).toFixed(2)}</p>
                     </div>
                 ))}
                 </CardContent>
@@ -77,7 +77,7 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
                     </div>
                     <div className="flex justify-between font-bold text-lg pt-4 border-t">
                         <span>Total</span>
-                        <span>${order.total.toFixed(2)}</span>
+                        <span>₹{order.total.toFixed(2)}</span>
                     </div>
                 </CardContent>
             </Card>
