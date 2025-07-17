@@ -40,6 +40,8 @@ function FarmerOrderCard({ order, onUpdateStatus }: { order: Order; onUpdateStat
       setIsUpdating(false);
     }
   };
+  
+  const isPending = !order.status || order.status.toLowerCase() === 'pending';
 
   return (
      <Card>
@@ -60,11 +62,11 @@ function FarmerOrderCard({ order, onUpdateStatus }: { order: Order; onUpdateStat
                   className={cn(
                     'capitalize',
                     order.status === 'Delivered' && 'bg-green-600 text-white',
-                    order.status === 'Pending' && 'bg-yellow-500 text-white',
+                    (order.status === 'Pending' || !order.status) && 'bg-yellow-500 text-white',
                     order.status === 'Shipped' && 'bg-blue-500 text-white'
                   )}
                 >
-                  {order.status}
+                  {order.status || 'Pending'}
                 </Badge>
             </div>
         </CardHeader>
@@ -79,7 +81,7 @@ function FarmerOrderCard({ order, onUpdateStatus }: { order: Order; onUpdateStat
          <CardFooter className="flex justify-end gap-2">
             {isUpdating ? (
               <Button disabled size="sm"><Loader2 className="h-4 w-4 animate-spin mr-2" />Updating...</Button>
-            ) : order.status?.toLowerCase() === 'pending' ? (
+            ) : isPending ? (
                 <>
                 <Button size="sm" variant="outline" className="text-red-600 border-red-600 hover:bg-red-50 hover:text-red-700" onClick={() => handleUpdate('Cancelled')}>
                     <XCircle className="h-4 w-4 mr-2" />
