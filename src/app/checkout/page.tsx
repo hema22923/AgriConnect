@@ -23,16 +23,18 @@ export default function CheckoutPage() {
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
   const [isOrderPlaced, setIsOrderPlaced] = useState(false);
-  const [shippingInfo, setShippingInfo] = useState({
-      name: '',
-      email: '',
-      address: '',
-      city: '',
-      zip: '',
-  });
 
+  // Initialize state directly to prevent hydration mismatch
+  const [shippingInfo, setShippingInfo] = useState(() => ({
+    name: userName !== 'Guest' ? userName : '',
+    email: userEmail || '',
+    address: address || '',
+    city: city || '',
+    zip: zip || '',
+  }));
+
+  // Effect to update form if user context changes after initial load
   useEffect(() => {
-    // Pre-fill form if user is logged in and has address info
     if (uid) {
         setShippingInfo({
             name: userName !== 'Guest' ? userName : '',
