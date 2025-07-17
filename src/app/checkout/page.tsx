@@ -101,6 +101,7 @@ export default function CheckoutPage() {
 
       const orderItems: OrderItem[] = cart.map(item => ({
           productId: item.product.id,
+          sellerId: item.product.uid, // Add farmer's UID here
           name: item.product.name,
           price: item.product.price,
           quantity: item.quantity,

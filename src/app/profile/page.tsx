@@ -5,8 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { fetchProducts, orders } from "@/lib/data"
-import type { Product } from '@/lib/types'
+import { fetchProducts, fetchOrdersForFarmer } from "@/lib/data"
+import type { Product, Order } from '@/lib/types'
 import Image from "next/image"
 import { Edit, PlusCircle, Package, ShoppingCart, DollarSign, Home } from "lucide-react"
 import { useUser } from "@/context/user-context";
@@ -19,47 +19,48 @@ export default function ProfilePage() {
     const { userName, uid, userType, address, city, zip, isLoading: isUserLoading } = useUser();
     const router = useRouter();
     const [farmerProducts, setFarmerProducts] = useState<Product[]>([]);
-    const [isLoadingProducts, setIsLoadingProducts] = useState(true);
+    const [farmerOrders, setFarmerOrders] = useState<Order[]>([]);
+    const [isLoadingData, setIsLoadingData] = useState(true);
 
     useEffect(() => {
-        if (userType === 'buyer') {
+        if (!isUserLoading && userType === 'buyer') {
             router.push('/');
         }
-    }, [userType, router]);
+    }, [userType, router, isUserLoading]);
 
     useEffect(() => {
-        const loadProducts = async () => {
-            if (!uid) return;
-            setIsLoadingProducts(true);
-            const allProducts = await fetchProducts();
-            setFarmerProducts(allProducts.filter(p => p.uid === uid));
-            setIsLoadingProducts(false);
+        const loadFarmerData = async () => {
+            if (!uid || userType !== 'farmer') return;
+            setIsLoadingData(true);
+            const [products, orders] = await Promise.all([
+                fetchProducts(),
+                fetchOrdersForFarmer(uid)
+            ]);
+            setFarmerProducts(products.filter(p => p.uid === uid));
+            setFarmerOrders(orders);
+            setIsLoadingData(false);
         };
-        if (userType === 'farmer') {
-            loadProducts();
+        
+        if (!isUserLoading && userType === 'farmer') {
+            loadFarmerData();
         }
-    }, [uid, userType]);
+    }, [uid, userType, isUserLoading]);
 
     const farmerStats = useMemo(() => {
         if (!uid || userType !== 'farmer') return { totalOrders: 0, totalRevenue: 0 };
-
-        const farmerOrderItems = orders
-            .flatMap(order => order.items)
-            .filter(item => item.product.uid === uid);
-
-        const farmerOrders = orders.filter(order => 
-            order.items.some(item => item.product.uid === uid)
-        );
-
-        const totalRevenue = farmerOrderItems.reduce((acc, item) => {
-            return acc + (item.product.price * item.quantity);
+        
+        const totalRevenue = farmerOrders.reduce((acc, order) => {
+            const farmerItemsTotal = order.items
+                .filter(item => item.sellerId === uid)
+                .reduce((itemAcc, item) => itemAcc + (item.price * item.quantity), 0);
+            return acc + farmerItemsTotal;
         }, 0);
 
         return {
             totalOrders: farmerOrders.length,
             totalRevenue: totalRevenue,
         };
-    }, [uid, userType]);
+    }, [uid, userType, farmerOrders]);
     
     if (isUserLoading) {
         return (
@@ -164,7 +165,7 @@ export default function ProfilePage() {
                 </CardHeader>
                 <CardContent>
                     <div className="space-y-4">
-                        {isLoadingProducts ? (
+                        {isLoadingData ? (
                             Array.from({ length: 3 }).map((_, i) => (
                                 <div key={i} className="flex items-center gap-4 p-2">
                                     <Skeleton className="h-16 w-16 rounded-md"/>

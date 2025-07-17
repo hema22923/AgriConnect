@@ -20,6 +20,7 @@ export type CartItem = {
 
 export type OrderItem = {
   productId: string;
+  sellerId: string; // The farmer's UID
   name: string;
   price: number;
   quantity: number;

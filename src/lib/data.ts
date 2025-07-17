@@ -81,7 +81,7 @@ export const deleteProduct = async (id: string) => {
     }
 };
 
-// Function to fetch orders for a specific user
+// Function to fetch orders for a specific user (buyer)
 export const fetchOrdersForUser = async (userId: string): Promise<Order[]> => {
     try {
         const ordersCollection = collection(db, 'orders');
@@ -92,6 +92,30 @@ export const fetchOrdersForUser = async (userId: string): Promise<Order[]> => {
         return userOrders.sort((a, b) => b.date.seconds - a.date.seconds);
     } catch (e) {
         console.error("Error fetching user orders: ", e);
+        return [];
+    }
+};
+
+// Function to fetch orders for a specific farmer
+export const fetchOrdersForFarmer = async (farmerId: string): Promise<Order[]> => {
+    try {
+        const ordersCollection = collection(db, 'orders');
+        const q = query(ordersCollection, where("items", "array-contains-any", [{sellerId: farmerId}]));
+
+        const allOrdersSnapshot = await getDocs(collection(db, 'orders'));
+
+        const farmerOrders: Order[] = [];
+        allOrdersSnapshot.forEach(doc => {
+            const order = { id: doc.id, ...doc.data() } as Order;
+            if (order.items.some(item => item.sellerId === farmerId)) {
+                farmerOrders.push(order);
+            }
+        });
+
+        // Sort by date descending
+        return farmerOrders.sort((a, b) => b.date.seconds - a.date.seconds);
+    } catch (e) {
+        console.error("Error fetching farmer orders: ", e);
         return [];
     }
 };
