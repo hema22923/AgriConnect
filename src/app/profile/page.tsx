@@ -8,41 +8,40 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { fetchProducts, orders } from "@/lib/data"
 import type { Product } from '@/lib/types'
 import Image from "next/image"
-import { Edit, PlusCircle, Package, ShoppingCart, DollarSign, LogOut } from "lucide-react"
+import { Edit, PlusCircle, Package, ShoppingCart, DollarSign, Home } from "lucide-react"
 import { useUser } from "@/context/user-context";
 import { useEffect, useState, useMemo } from "react"
 import { Skeleton } from "@/components/ui/skeleton"
-import { auth } from "@/lib/firebase";
-import { signOut } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 
 export default function ProfilePage() {
-    const { userName, uid, setUserType, setGlobalUserName } = useUser();
+    const { userName, uid, userType, address, city, zip, isLoading: isUserLoading } = useUser();
     const router = useRouter();
     const [farmerProducts, setFarmerProducts] = useState<Product[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoadingProducts, setIsLoadingProducts] = useState(true);
 
-    const handleLogout = async () => {
-        await signOut(auth);
-        setGlobalUserName('Guest');
-        setUserType('buyer');
-        router.push('/login');
-    };
+    useEffect(() => {
+        if (userType === 'buyer') {
+            router.push('/');
+        }
+    }, [userType, router]);
 
     useEffect(() => {
         const loadProducts = async () => {
             if (!uid) return;
-            setIsLoading(true);
+            setIsLoadingProducts(true);
             const allProducts = await fetchProducts();
             setFarmerProducts(allProducts.filter(p => p.uid === uid));
-            setIsLoading(false);
+            setIsLoadingProducts(false);
         };
-        loadProducts();
-    }, [uid]);
+        if (userType === 'farmer') {
+            loadProducts();
+        }
+    }, [uid, userType]);
 
     const farmerStats = useMemo(() => {
-        if (!uid) return { totalOrders: 0, totalRevenue: 0 };
+        if (!uid || userType !== 'farmer') return { totalOrders: 0, totalRevenue: 0 };
 
         const farmerOrderItems = orders
             .flatMap(order => order.items)
@@ -60,7 +59,21 @@ export default function ProfilePage() {
             totalOrders: farmerOrders.length,
             totalRevenue: totalRevenue,
         };
-    }, [uid]);
+    }, [uid, userType]);
+    
+    if (isUserLoading) {
+        return (
+            <div className="max-w-4xl mx-auto space-y-8">
+                <Skeleton className="h-24 w-1/2" />
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    <Skeleton className="h-28 w-full" />
+                    <Skeleton className="h-28 w-full" />
+                    <Skeleton className="h-28 w-full" />
+                </div>
+                <Skeleton className="h-64 w-full" />
+            </div>
+        )
+    }
 
     return (
         <div className="max-w-4xl mx-auto space-y-8">
@@ -85,7 +98,7 @@ export default function ProfilePage() {
                 </div>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="text-sm font-medium">
@@ -114,6 +127,24 @@ export default function ProfilePage() {
                         </p>
                     </CardContent>
                 </Card>
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                        <CardTitle className="text-sm font-medium">
+                            Shipping Address
+                        </CardTitle>
+                        <Home className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                       {address ? (
+                         <div className="text-sm">
+                            <p>{address}</p>
+                            <p>{city}, {zip}</p>
+                        </div>
+                       ) : (
+                        <p className="text-sm text-muted-foreground">No address set.</p>
+                       )}
+                    </CardContent>
+                </Card>
             </div>
 
             <Card>
@@ -133,7 +164,7 @@ export default function ProfilePage() {
                 </CardHeader>
                 <CardContent>
                     <div className="space-y-4">
-                        {isLoading ? (
+                        {isLoadingProducts ? (
                             Array.from({ length: 3 }).map((_, i) => (
                                 <div key={i} className="flex items-center gap-4 p-2">
                                     <Skeleton className="h-16 w-16 rounded-md"/>

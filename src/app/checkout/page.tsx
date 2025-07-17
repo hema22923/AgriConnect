@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/context/cart-context';
 import { Button } from '@/components/ui/button';
@@ -13,11 +13,12 @@ import { CheckCircle, Loader2 } from 'lucide-react';
 import { db } from '@/lib/firebase';
 import { doc, updateDoc, increment, collection, addDoc, serverTimestamp, writeBatch } from 'firebase/firestore';
 import { useUser } from '@/context/user-context';
+import { updateUser } from '@/lib/data';
 import type { OrderItem } from '@/lib/types';
 
 export default function CheckoutPage() {
   const { cart, cartTotal, clearCart } = useCart();
-  const { uid, userName } = useUser();
+  const { uid, userName, userEmail, address, city, zip, setAddress, setCity, setZip } = useUser();
   const router = useRouter();
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -29,6 +30,20 @@ export default function CheckoutPage() {
       city: '',
       zip: '',
   });
+
+  useEffect(() => {
+    // Pre-fill form if user is logged in and has address info
+    if (uid) {
+        setShippingInfo({
+            name: userName !== 'Guest' ? userName : '',
+            email: userEmail || '',
+            address: address || '',
+            city: city || '',
+            zip: zip || '',
+        })
+    }
+  }, [uid, userName, userEmail, address, city, zip]);
+
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const { id, value } = e.target;
@@ -58,6 +73,18 @@ export default function CheckoutPage() {
     setIsProcessing(true);
     
     try {
+      // Save/update user's address info
+      const addressUpdates = {
+          address: shippingInfo.address,
+          city: shippingInfo.city,
+          zip: shippingInfo.zip,
+      };
+      await updateUser(uid, addressUpdates);
+      // Update context as well
+      setAddress(shippingInfo.address);
+      setCity(shippingInfo.city);
+      setZip(shippingInfo.zip);
+
       const batch = writeBatch(db);
 
       // 1. Decrement stock for each product
@@ -89,6 +116,7 @@ export default function CheckoutPage() {
         total: cartTotal,
         status: 'Pending',
         date: serverTimestamp(),
+        shippingAddress: `${shippingInfo.address}, ${shippingInfo.city}, ${shippingInfo.zip}`,
       });
 
       // Commit the batch

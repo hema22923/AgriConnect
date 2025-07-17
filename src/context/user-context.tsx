@@ -16,6 +16,12 @@ interface UserContextType {
   setUserName: (name: string) => void;
   userEmail: string | null;
   setUserEmail: (email: string | null) => void;
+  address: string | null;
+  setAddress: (address: string | null) => void;
+  city: string | null;
+  setCity: (city: string | null) => void;
+  zip: string | null;
+  setZip: (zip: string | null) => void;
   isLoading: boolean;
 }
 
@@ -29,13 +35,15 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [userType, setUserType] = useState<UserType>('buyer');
   const [userName, setUserName] = useState('Guest');
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [address, setAddress] = useState<string | null>(null);
+  const [city, setCity] = useState<string | null>(null);
+  const [zip, setZip] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: FirebaseUser | null) => {
+      setIsLoading(true);
       if (firebaseUser) {
-        // User is signed in
-        // Add a small delay to allow Firestore connection to be established
         await delay(100); 
         const userDocRef = doc(db, 'users', firebaseUser.uid);
         const userDoc = await getDoc(userDocRef);
@@ -43,31 +51,46 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
         if (userDoc.exists()) {
           const userData = userDoc.data();
-          setUserName(userData.fullName);
-          setUserType(userData.role);
-          setUserEmail(userData.email);
+          setUserName(userData.fullName || 'User');
+          setUserType(userData.role || 'buyer');
+          setUserEmail(userData.email || null);
+          setAddress(userData.address || null);
+          setCity(userData.city || null);
+          setZip(userData.zip || null);
         } else {
-          // Handle case where user exists in Auth but not Firestore
           setUserName('Guest');
           setUserType('buyer');
           setUserEmail(null);
+          setAddress(null);
+          setCity(null);
+          setZip(null);
         }
       } else {
-        // User is signed out
         setUid(null);
         setUserName('Guest');
         setUserType('buyer');
         setUserEmail(null);
+        setAddress(null);
+        setCity(null);
+        setZip(null);
       }
       setIsLoading(false);
     });
 
-    // Cleanup subscription on unmount
     return () => unsubscribe();
   }, []);
 
   return (
-    <UserContext.Provider value={{ uid, userType, setUserType, userName, setUserName, userEmail, setUserEmail, isLoading }}>
+    <UserContext.Provider value={{ 
+        uid, 
+        userType, setUserType, 
+        userName, setUserName, 
+        userEmail, setUserEmail,
+        address, setAddress,
+        city, setCity,
+        zip, setZip,
+        isLoading 
+    }}>
       {children}
     </UserContext.Provider>
   );

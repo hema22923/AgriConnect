@@ -36,6 +36,7 @@ export type Order = {
   status: 'Pending' | 'Shipped' | 'Delivered' | 'Cancelled';
   date: any; // Using 'any' for Firestore Timestamp compatibility
   buyerName: string;
+  shippingAddress?: string;
   buyerQuestion?: string;
 };
 
@@ -44,4 +45,7 @@ export type User = {
   email: string;
   password?: string; // Optional for security reasons in a real app
   role: 'buyer' | 'farmer' | 'admin';
+  address?: string;
+  city?: string;
+  zip?: string;
 };
