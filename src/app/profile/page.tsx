@@ -1,19 +1,103 @@
 
 'use client';
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { fetchProducts, fetchOrdersForFarmer } from "@/lib/data"
+import { fetchProducts, subscribeToFarmerOrders, updateOrderStatus } from "@/lib/data"
 import type { Product, Order } from '@/lib/types'
 import Image from "next/image"
-import { Edit, PlusCircle, Package, ShoppingCart, DollarSign, Home } from "lucide-react"
+import { Edit, PlusCircle, Package, ShoppingCart, DollarSign, Home, CheckCircle, XCircle, Loader2 } from "lucide-react"
 import { useUser } from "@/context/user-context";
 import { useEffect, useState, useMemo } from "react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast"
+import { cn } from "@/lib/utils"
+import type { Timestamp } from "firebase/firestore"
+
+function FarmerOrderCard({ order, onUpdateStatus }: { order: Order; onUpdateStatus: (orderId: string, status: Order['status']) => Promise<void> }) {
+  const [isUpdating, setIsUpdating] = useState(false);
+  const { toast } = useToast();
+
+  const handleUpdate = async (status: Order['status']) => {
+    setIsUpdating(true);
+    try {
+      await onUpdateStatus(order.id, status);
+      toast({
+        title: "Order Updated",
+        description: `Order #${order.id.slice(0, 8)} has been marked as ${status}.`
+      });
+    } catch (error) {
+      toast({
+        title: "Update Failed",
+        description: "Could not update the order status. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  return (
+     <Card>
+        <CardHeader>
+            <div className="flex justify-between items-start">
+                <div>
+                    <CardTitle className="text-lg">Order #{order.id.slice(0,8)}</CardTitle>
+                    <CardDescription>
+                         From: {order.buyerName} &bull; Placed: {order.date ? new Date((order.date as Timestamp).seconds * 1000).toLocaleDateString() : 'N/A'}
+                    </CardDescription>
+                </div>
+                 <Badge
+                  variant={
+                    order.status === 'Delivered' ? 'default' :
+                    order.status === 'Cancelled' ? 'destructive' :
+                    'secondary'
+                  }
+                  className={cn(
+                    'capitalize',
+                    order.status === 'Delivered' && 'bg-green-600 text-white',
+                    order.status === 'Pending' && 'bg-yellow-500 text-white',
+                    order.status === 'Shipped' && 'bg-blue-500 text-white'
+                  )}
+                >
+                  {order.status}
+                </Badge>
+            </div>
+        </CardHeader>
+        <CardContent className="space-y-2 text-sm">
+            {order.items.map(item => (
+                <div key={item.productId} className="flex justify-between">
+                    <p>{item.name} <span className="text-muted-foreground">x {item.quantity} kg</span></p>
+                    <p className="font-medium">₹{(item.price * item.quantity).toFixed(2)}</p>
+                </div>
+            ))}
+        </CardContent>
+         <CardFooter className="flex justify-end gap-2">
+            {isUpdating ? (
+              <Button disabled size="sm"><Loader2 className="h-4 w-4 animate-spin mr-2" />Updating...</Button>
+            ) : order.status === 'Pending' ? (
+                <>
+                <Button size="sm" variant="outline" className="text-red-600 border-red-600 hover:bg-red-50 hover:text-red-700" onClick={() => handleUpdate('Cancelled')}>
+                    <XCircle className="h-4 w-4 mr-2" />
+                    Cancel Order
+                </Button>
+                <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white" onClick={() => handleUpdate('Delivered')}>
+                    <CheckCircle className="h-4 w-4 mr-2" />
+                    Mark as Delivered
+                </Button>
+                </>
+            ) : (
+                <p className="text-sm text-muted-foreground">Order has been fulfilled or cancelled.</p>
+            )}
+        </CardFooter>
+    </Card>
+  )
+}
+
 
 export default function ProfilePage() {
     const { userName, uid, userType, address, city, zip, isLoading: isUserLoading } = useUser();
@@ -29,35 +113,43 @@ export default function ProfilePage() {
     }, [userType, router, isUserLoading]);
 
     useEffect(() => {
-        const loadFarmerData = async () => {
-            if (!uid || userType !== 'farmer') return;
-            setIsLoadingData(true);
-            const [products, orders] = await Promise.all([
-                fetchProducts(),
-                fetchOrdersForFarmer(uid)
-            ]);
+        if (isUserLoading || userType !== 'farmer' || !uid) return;
+
+        const loadProducts = async () => {
+            const products = await fetchProducts();
             setFarmerProducts(products.filter(p => p.uid === uid));
-            setFarmerOrders(orders);
-            setIsLoadingData(false);
         };
         
-        if (!isUserLoading && userType === 'farmer') {
-            loadFarmerData();
-        }
+        loadProducts();
+
+        setIsLoadingData(true);
+        const unsubscribeOrders = subscribeToFarmerOrders(uid, (orders) => {
+            setFarmerOrders(orders);
+            setIsLoadingData(false);
+        });
+
+        // Cleanup subscriptions on component unmount
+        return () => {
+            unsubscribeOrders();
+        };
+
     }, [uid, userType, isUserLoading]);
+
 
     const farmerStats = useMemo(() => {
         if (!uid || userType !== 'farmer') return { totalOrders: 0, totalRevenue: 0 };
         
-        const totalRevenue = farmerOrders.reduce((acc, order) => {
+        const deliveredOrders = farmerOrders.filter(o => o.status === 'Delivered');
+
+        const totalRevenue = deliveredOrders.reduce((acc, order) => {
             const farmerItemsTotal = order.items
-                .filter(item => item.sellerId === uid) // Only include items sold by this farmer
+                .filter(item => item.sellerId === uid)
                 .reduce((itemAcc, item) => itemAcc + (item.price * item.quantity), 0);
             return acc + farmerItemsTotal;
         }, 0);
 
         return {
-            totalOrders: farmerOrders.length,
+            totalOrders: deliveredOrders.length,
             totalRevenue: totalRevenue,
         };
     }, [uid, userType, farmerOrders]);
@@ -103,14 +195,14 @@ export default function ProfilePage() {
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="text-sm font-medium">
-                            Total Orders
+                            Completed Orders
                         </CardTitle>
                         <ShoppingCart className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">{farmerStats.totalOrders}</div>
                         <p className="text-xs text-muted-foreground">
-                            Based on buyer purchases
+                            Delivered orders
                         </p>
                     </CardContent>
                 </Card>
@@ -166,7 +258,7 @@ export default function ProfilePage() {
                 <CardContent>
                     <div className="space-y-4">
                         {isLoadingData ? (
-                            Array.from({ length: 3 }).map((_, i) => (
+                            Array.from({ length: 2 }).map((_, i) => (
                                 <div key={i} className="flex items-center gap-4 p-2">
                                     <Skeleton className="h-16 w-16 rounded-md"/>
                                     <div className="flex-1 space-y-2">
@@ -199,6 +291,32 @@ export default function ProfilePage() {
                                 <Package className="mx-auto h-12 w-12 mb-4" />
                                 <h3 className="text-xl font-semibold">No products yet</h3>
                                 <p>Click "Add New Product" to get started.</p>
+                            </div>
+                        )}
+                    </div>
+                </CardContent>
+            </Card>
+
+            <Card>
+                 <CardHeader>
+                    <CardTitle className="font-headline">Recent Orders</CardTitle>
+                    <CardDescription>Manage incoming orders from buyers.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                     <div className="space-y-4">
+                        {isLoadingData ? (
+                            <div className="flex items-center justify-center p-8">
+                                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                            </div>
+                        ) : farmerOrders.length > 0 ? (
+                            farmerOrders.map(order => (
+                                <FarmerOrderCard key={order.id} order={order} onUpdateStatus={updateOrderStatus} />
+                            ))
+                        ) : (
+                             <div className="text-center text-muted-foreground py-8">
+                                <ShoppingCart className="mx-auto h-12 w-12 mb-4" />
+                                <h3 className="text-xl font-semibold">No orders yet</h3>
+                                <p>When a buyer places an order, it will appear here.</p>
                             </div>
                         )}
                     </div>

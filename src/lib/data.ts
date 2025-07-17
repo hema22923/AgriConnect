@@ -1,7 +1,7 @@
 
 import type { Product, Order, User } from './types';
 import { db } from './firebase';
-import { collection, addDoc, doc, updateDoc, setDoc, getDocs, getDoc, deleteDoc, query, where, writeBatch, runTransaction, Timestamp } from 'firebase/firestore';
+import { collection, addDoc, doc, updateDoc, setDoc, getDocs, getDoc, deleteDoc, query, where, writeBatch, runTransaction, Timestamp, onSnapshot } from 'firebase/firestore';
 
 
 // This will hold products fetched from Firestore
@@ -96,29 +96,79 @@ export const fetchOrdersForUser = async (userId: string): Promise<Order[]> => {
     }
 };
 
+// Real-time subscription to a buyer's orders
+export const subscribeToOrders = (userId: string, callback: (orders: Order[]) => void) => {
+    const ordersCollection = collection(db, 'orders');
+    const q = query(ordersCollection, where("userId", "==", userId));
+    
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+        const userOrders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Order));
+        const sortedOrders = userOrders.sort((a, b) => (b.date as Timestamp).seconds - (a.date as Timestamp).seconds);
+        callback(sortedOrders);
+    }, (error) => {
+        console.error("Error subscribing to orders: ", error);
+    });
+
+    return unsubscribe; // Return the unsubscribe function to be called on cleanup
+};
+
+
 // Function to fetch orders for a specific farmer
 export const fetchOrdersForFarmer = async (farmerId: string): Promise<Order[]> => {
     try {
-        // Firestore does not support querying for a value within an array of objects directly in a scalable way.
-        // The correct approach is to fetch all orders and filter them on the client-side or use a more complex data structure/Cloud Function.
-        // For this app, client-side filtering is sufficient.
         const ordersCollection = collection(db, 'orders');
+        const q = query(ordersCollection, where("items", "array-contains-any", [{ sellerId: farmerId }]));
         const allOrdersSnapshot = await getDocs(ordersCollection);
 
         const farmerOrders: Order[] = [];
         allOrdersSnapshot.forEach(doc => {
             const order = { id: doc.id, ...doc.data() } as Order;
-            // Check if any item in the order belongs to the farmer
             if (order.items.some(item => item.sellerId === farmerId)) {
                 farmerOrders.push(order);
             }
         });
 
-        // Sort by date descending
         return farmerOrders.sort((a, b) => (b.date as Timestamp).seconds - (a.date as Timestamp).seconds);
     } catch (e) {
         console.error("Error fetching farmer orders: ", e);
         return [];
+    }
+};
+
+// Real-time subscription to a farmer's orders
+export const subscribeToFarmerOrders = (farmerId: string, callback: (orders: Order[]) => void) => {
+    const ordersCollection = collection(db, 'orders');
+    const q = query(ordersCollection, where('items.sellerId', '==', farmerId)); // This query won't work as intended.
+    
+    // Firestore can't query inside an array of objects like this. We fetch all and filter client-side.
+    // This is not efficient for large scale, but acceptable for this project's scope.
+    // For a production app, a Cloud Function would be used to denormalize data.
+    const unsubscribe = onSnapshot(collection(db, 'orders'), (snapshot) => {
+        const farmerOrders: Order[] = [];
+        snapshot.forEach(doc => {
+            const order = { id: doc.id, ...doc.data() } as Order;
+            if (order.items.some(item => item.sellerId === farmerId)) {
+                farmerOrders.push(order);
+            }
+        });
+
+        const sortedOrders = farmerOrders.sort((a, b) => (b.date as Timestamp).seconds - (a.date as Timestamp).seconds);
+        callback(sortedOrders);
+    }, (error) => {
+        console.error("Error subscribing to farmer orders: ", error);
+    });
+
+    return unsubscribe;
+};
+
+// Function for a farmer to update the status of an order
+export const updateOrderStatus = async (orderId: string, status: 'Delivered' | 'Cancelled') => {
+    const orderRef = doc(db, 'orders', orderId);
+    try {
+        await updateDoc(orderRef, { status: status });
+    } catch (error) {
+        console.error("Error updating order status: ", error);
+        throw error;
     }
 };
 

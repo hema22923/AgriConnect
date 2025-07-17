@@ -11,7 +11,7 @@ import { Package, ChevronRight, Loader2, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUser } from '@/context/user-context';
 import type { Order } from '@/lib/types';
-import { fetchOrdersForUser, updateProductRating, updateOrderItemAsRated } from '@/lib/data';
+import { fetchOrdersForUser, updateProductRating, updateOrderItemAsRated, subscribeToOrders } from '@/lib/data';
 import {
   Dialog,
   DialogContent,
@@ -93,17 +93,17 @@ export default function OrdersPage() {
 
     useEffect(() => {
         if (uid) {
-            const getOrders = async () => {
-                setIsLoading(true);
-                const userOrders = await fetchOrdersForUser(uid);
-                setOrders(userOrders);
+            setIsLoading(true);
+            const unsubscribe = subscribeToOrders(uid, (newOrders) => {
+                setOrders(newOrders);
                 setIsLoading(false);
-            };
-            getOrders();
+            });
+            return () => unsubscribe();
         } else {
           setIsLoading(false);
         }
-    }, [uid, router]);
+    }, [uid]);
+
 
     const handleRatingSubmitted = (orderId: string, productId: string) => {
         setOrders(prevOrders => 
@@ -171,11 +171,15 @@ export default function OrdersPage() {
               </CardContent>
               <CardFooter className="flex justify-between items-center bg-secondary/30 p-4">
                 <Badge
+                  variant={
+                    order.status === 'Delivered' ? 'default' :
+                    order.status === 'Cancelled' ? 'destructive' :
+                    'secondary'
+                  }
                   className={cn(
-                    order.status === 'Delivered' && 'bg-green-100 text-green-800 border-green-200',
-                    order.status === 'Shipped' && 'bg-blue-100 text-blue-800 border-blue-200',
-                    order.status === 'Pending' && 'bg-yellow-100 text-yellow-800 border-yellow-200',
-                    order.status === 'Cancelled' && 'bg-red-100 text-red-800 border-red-200'
+                    order.status === 'Delivered' && 'bg-green-600 text-white',
+                    order.status === 'Pending' && 'bg-yellow-500 text-white',
+                    order.status === 'Shipped' && 'bg-blue-500 text-white'
                   )}
                 >
                   {order.status}
