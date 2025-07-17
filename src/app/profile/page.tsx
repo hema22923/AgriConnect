@@ -41,7 +41,7 @@ function FarmerOrderCard({ order, onUpdateStatus }: { order: Order; onUpdateStat
     }
   };
   
-  const isPending = !order.status || order.status.toLowerCase() === 'pending';
+  const isPending = !order.status || order.status === 'Pending';
 
   return (
      <Card>
@@ -62,7 +62,7 @@ function FarmerOrderCard({ order, onUpdateStatus }: { order: Order; onUpdateStat
                   className={cn(
                     'capitalize',
                     order.status === 'Delivered' && 'bg-green-600 text-white',
-                    (order.status === 'Pending' || !order.status) && 'bg-yellow-500 text-white',
+                    (!order.status || order.status === 'Pending') && 'bg-yellow-500 text-white',
                     order.status === 'Shipped' && 'bg-blue-500 text-white'
                   )}
                 >
