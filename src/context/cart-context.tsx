@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect, useRef } from 'react';
 import type { Product, CartItem } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 
@@ -20,22 +20,52 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const { toast } = useToast();
+  const previousCartRef = useRef<CartItem[]>([]);
+
+  useEffect(() => {
+    const previousCart = previousCartRef.current;
+    const currentCart = cart;
+
+    // Check if an item was removed
+    if (currentCart.length < previousCart.length) {
+      toast({
+        title: "Removed from cart",
+        variant: "destructive",
+        description: `Item has been removed from your cart.`,
+      });
+    } else {
+      // Check if an item was added or quantity increased
+      const itemAddedOrUpdated = currentCart.find(currentItem => {
+        const prevItem = previousCart.find(p => p.product.id === currentItem.product.id);
+        return !prevItem || currentItem.quantity > (prevItem?.quantity || 0);
+      });
+
+      if (itemAddedOrUpdated && previousCart.length > 0) { // Don't toast on initial load
+         toast({
+          title: "Added to cart",
+          description: `${itemAddedOrUpdated.product.name} has been added to your cart.`,
+        });
+      }
+    }
+
+    previousCartRef.current = cart;
+  }, [cart, toast]);
 
   const addToCart = (product: Product, quantity: number = 1) => {
+    if (product.stock <= 0) {
+      toast({
+        title: "Out of Stock",
+        description: `${product.name} is currently unavailable.`,
+        variant: "destructive",
+      });
+      return;
+    }
+  
     setCart((prevCart) => {
-      if (product.stock <= 0) {
-        toast({
-          title: "Out of Stock",
-          description: `${product.name} is currently unavailable.`,
-          variant: "destructive",
-        });
-        return prevCart;
-      }
-
       const existingItem = prevCart.find((item) => item.product.id === product.id);
       const currentQuantityInCart = existingItem ? existingItem.quantity : 0;
       const newQuantity = currentQuantityInCart + quantity;
-
+  
       if (newQuantity > product.stock) {
         toast({
           title: "Limited Stock",
@@ -43,75 +73,49 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
           variant: "destructive",
         });
         if (existingItem) {
-          return prevCart.map(item =>
+          return prevCart.map((item) =>
             item.product.id === product.id ? { ...item, quantity: product.stock } : item
           );
         }
         return [...prevCart, { product, quantity: product.stock }];
       }
-
-      toast({
-        title: "Added to cart",
-        description: `${product.name} has been added to your cart.`,
-      });
-      
+  
       if (existingItem) {
         return prevCart.map((item) =>
-          item.product.id === product.id
-            ? { ...item, quantity: item.quantity + quantity }
-            : item
+          item.product.id === product.id ? { ...item, quantity: newQuantity } : item
         );
       }
-      
       return [...prevCart, { product, quantity }];
     });
   };
 
   const removeFromCart = (productId: string) => {
-    setCart((prevCart) => {
-      const itemToRemove = prevCart.find((item) => item.product.id === productId);
-      if (itemToRemove) {
-        toast({
-          title: "Removed from cart",
-          variant: "destructive",
-          description: `Item has been removed from your cart.`,
-        });
-      }
-      return prevCart.filter((item) => item.product.id !== productId);
-    });
+    setCart((prevCart) => prevCart.filter((item) => item.product.id !== productId));
   };
 
   const updateQuantity = (productId: string, quantity: number) => {
     setCart((prevCart) => {
-        const itemInCart = prevCart.find(item => item.product.id === productId);
-        if (!itemInCart) return prevCart;
+      const itemInCart = prevCart.find(item => item.product.id === productId);
+      if (!itemInCart) return prevCart;
 
-        if (quantity > itemInCart.product.stock) {
-           toast({
-              title: "Limited Stock",
-              description: `Only ${itemInCart.product.stock} kg of ${itemInCart.product.name} available.`,
-              variant: "destructive",
-          });
-          return prevCart.map((item) =>
-              item.product.id === productId ? { ...item, quantity: itemInCart.product.stock } : item
-            );
-        }
-
-        if (quantity <= 0) {
-          const itemToRemove = prevCart.find((item) => item.product.id === productId);
-          if (itemToRemove) {
-            toast({
-              title: "Removed from cart",
-              variant: "destructive",
-              description: `Item has been removed from your cart.`,
-            });
-          }
-          return prevCart.filter((item) => item.product.id !== productId);
-        }
-
+      if (quantity > itemInCart.product.stock) {
+         toast({
+            title: "Limited Stock",
+            description: `Only ${itemInCart.product.stock} kg of ${itemInCart.product.name} available.`,
+            variant: "destructive",
+        });
         return prevCart.map((item) =>
-            item.product.id === productId ? { ...item, quantity } : item
+            item.product.id === productId ? { ...item, quantity: itemInCart.product.stock } : item
           );
+      }
+
+      if (quantity <= 0) {
+        return prevCart.filter((item) => item.product.id !== productId);
+      }
+
+      return prevCart.map((item) =>
+          item.product.id === productId ? { ...item, quantity } : item
+        );
       }
     );
   };
