@@ -2,16 +2,15 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { Package, ChevronRight, Loader2, Star } from 'lucide-react';
+import { Package, ChevronRight, Loader2, Star, CheckCircle, XCircle, ShoppingCart } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUser } from '@/context/user-context';
 import type { Order } from '@/lib/types';
-import { updateProductRating, updateOrderItemAsRated, subscribeToOrders } from '@/lib/data';
+import { updateProductRating, updateOrderItemAsRated, subscribeToOrders, subscribeToFarmerOrders, updateOrderStatus } from '@/lib/data';
 import {
   Dialog,
   DialogContent,
@@ -23,6 +22,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import type { Timestamp } from 'firebase/firestore';
 
+// Sub-component for Buyer's rating dialog
 function RatingDialog({ open, onOpenChange, orderId, item, onRatingSubmitted }: { open: boolean, onOpenChange: (open: boolean) => void, orderId: string, item: any, onRatingSubmitted: (orderId: string, productId: string) => void }) {
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
@@ -84,25 +84,124 @@ function RatingDialog({ open, onOpenChange, orderId, item, onRatingSubmitted }: 
   );
 }
 
+// Sub-component for Farmer's order card
+function FarmerOrderCard({ order, onUpdateStatus }: { order: Order; onUpdateStatus: (orderId: string, status: Order['status']) => Promise<void> }) {
+  const [isUpdating, setIsUpdating] = useState(false);
+  const { toast } = useToast();
+
+  const handleUpdate = async (status: Order['status']) => {
+    setIsUpdating(true);
+    try {
+      await onUpdateStatus(order.id, status);
+      toast({
+        title: "Order Updated",
+        description: `Order #${order.id.slice(0, 8)} has been marked as ${status}.`
+      });
+    } catch (error) {
+      toast({
+        title: "Update Failed",
+        description: "Could not update the order status. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const isPending = !order.status || order.status === 'Pending';
+  
+  return (
+     <Card>
+        <CardHeader>
+            <div className="flex justify-between items-start">
+                <div>
+                    <CardTitle className="text-lg">Order #{order.id.slice(0,8)}</CardTitle>
+                    <CardDescription>
+                         From: {order.buyerName} &bull; Placed: {order.date ? new Date((order.date as Timestamp).seconds * 1000).toLocaleDateString() : 'N/A'}
+                    </CardDescription>
+                </div>
+                 <Badge
+                  variant={
+                    order.status === 'Delivered' ? 'default' :
+                    order.status === 'Cancelled' ? 'destructive' :
+                    'secondary'
+                  }
+                  className={cn(
+                    'capitalize',
+                    order.status === 'Delivered' && 'bg-green-600 text-white',
+                    (!order.status || order.status === 'Pending') && 'bg-yellow-500 text-white',
+                    order.status === 'Shipped' && 'bg-blue-500 text-white'
+                  )}
+                >
+                  {order.status || 'Pending'}
+                </Badge>
+            </div>
+        </CardHeader>
+        <CardContent className="space-y-2 text-sm">
+            {order.items.map(item => (
+                <div key={item.productId} className="flex justify-between">
+                    <p>{item.name} <span className="text-muted-foreground">x {item.quantity} kg</span></p>
+                    <p className="font-medium">₹{(item.price * item.quantity).toFixed(2)}</p>
+                </div>
+            ))}
+        </CardContent>
+         <CardFooter className="flex justify-end gap-2">
+            {isUpdating ? (
+              <Button disabled size="sm"><Loader2 className="h-4 w-4 animate-spin mr-2" />Updating...</Button>
+            ) : isPending ? (
+                <>
+                <Button size="sm" variant="outline" className="text-red-600 border-red-600 hover:bg-red-50 hover:text-red-700" onClick={() => handleUpdate('Cancelled')}>
+                    <XCircle className="h-4 w-4 mr-2" />
+                    Cancel Order
+                </Button>
+                <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white" onClick={() => handleUpdate('Delivered')}>
+                    <CheckCircle className="h-4 w-4 mr-2" />
+                    Mark as Delivered
+                </Button>
+                </>
+            ) : (
+                <p className="text-sm text-muted-foreground">Order has been fulfilled or cancelled.</p>
+            )}
+        </CardFooter>
+    </Card>
+  )
+}
+
 export default function OrdersPage() {
-    const { uid } = useUser();
-    const router = useRouter();
+    const { uid, userType, isLoading: isUserLoading } = useUser();
     const [orders, setOrders] = useState<Order[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [selectedRatingItem, setSelectedRatingItem] = useState<{orderId: string, item: any} | null>(null);
 
     useEffect(() => {
-        if (uid) {
-            setIsLoading(true);
-            const unsubscribe = subscribeToOrders(uid, (newOrders) => {
+        if (isUserLoading || !uid) {
+            if (!isUserLoading) setIsLoading(false);
+            return;
+        };
+
+        setIsLoading(true);
+        let unsubscribe: () => void;
+
+        if (userType === 'buyer') {
+            unsubscribe = subscribeToOrders(uid, (newOrders) => {
                 setOrders(newOrders);
                 setIsLoading(false);
             });
-            return () => unsubscribe();
+        } else if (userType === 'farmer') {
+             unsubscribe = subscribeToFarmerOrders(uid, (newOrders) => {
+                setOrders(newOrders);
+                setIsLoading(false);
+            });
         } else {
-          setIsLoading(false);
+            setIsLoading(false);
         }
-    }, [uid]);
+
+        return () => {
+            if (unsubscribe) {
+                unsubscribe();
+            }
+        };
+    }, [uid, userType, isUserLoading]);
 
 
     const handleRatingSubmitted = (orderId: string, productId: string) => {
@@ -120,95 +219,128 @@ export default function OrdersPage() {
         );
     };
 
-    if (isLoading) {
+    if (isLoading || isUserLoading) {
         return (
             <div className="max-w-4xl mx-auto text-center py-10">
                 <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
-                <p className="mt-4 text-muted-foreground">Loading your orders...</p>
+                <p className="mt-4 text-muted-foreground">Loading orders...</p>
             </div>
         )
     }
 
-  return (
-    <div className="max-w-4xl mx-auto">
-      <h1 className="text-3xl font-bold font-headline mb-8">My Orders</h1>
-      {orders.length > 0 ? (
-        <div className="space-y-6">
-          {orders.map((order) => (
-            <Card key={order.id} className="overflow-hidden">
-                <CardHeader className="flex flex-row justify-between items-center bg-secondary/30 p-4">
-                    <div className='space-y-1'>
-                        <CardTitle className="text-lg">Order #{order.id.slice(0, 8)}</CardTitle>
-                        <CardDescription>Placed on {order.date ? new Date((order.date as Timestamp).seconds * 1000).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Date not available'}</CardDescription>
+    if (userType === 'buyer') {
+      return (
+        <div className="max-w-4xl mx-auto">
+          <h1 className="text-3xl font-bold font-headline mb-8">My Orders</h1>
+          {orders.length > 0 ? (
+            <div className="space-y-6">
+              {orders.map((order) => (
+                <Card key={order.id} className="overflow-hidden">
+                    <CardHeader className="flex flex-row justify-between items-center bg-secondary/30 p-4">
+                        <div className='space-y-1'>
+                            <CardTitle className="text-lg">Order #{order.id.slice(0, 8)}</CardTitle>
+                            <CardDescription>Placed on {order.date ? new Date((order.date as Timestamp).seconds * 1000).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Date not available'}</CardDescription>
+                        </div>
+                        <div className='text-right'>
+                            <p className="text-sm text-muted-foreground">Total</p>
+                            <p className="font-bold text-lg text-primary">₹{order.total.toFixed(2)}</p>
+                        </div>
+                    </CardHeader>
+                  <CardContent className="p-4">
+                    <div className="space-y-4">
+                      {order.items.map((item, index) => (
+                        <div key={index} className="flex justify-between items-center">
+                          <div>
+                            <p>{item.name} <span className="text-muted-foreground">x {item.quantity} kg</span></p>
+                             <p className="font-semibold text-sm">₹{(item.price * item.quantity).toFixed(2)}</p>
+                          </div>
+                          {order.status === 'Delivered' && (
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setSelectedRatingItem({orderId: order.id, item})}
+                                disabled={item.isRated}
+                            >
+                                <Star className="mr-2 h-4 w-4"/>
+                                {item.isRated ? 'Rated' : 'Rate Product'}
+                            </Button>
+                          )}
+                        </div>
+                      ))}
                     </div>
-                    <div className='text-right'>
-                        <p className="text-sm text-muted-foreground">Total</p>
-                        <p className="font-bold text-lg text-primary">₹{order.total.toFixed(2)}</p>
-                    </div>
-                </CardHeader>
-              <CardContent className="p-4">
-                <div className="space-y-4">
-                  {order.items.map((item, index) => (
-                    <div key={index} className="flex justify-between items-center">
-                      <div>
-                        <p>{item.name} <span className="text-muted-foreground">x {item.quantity} kg</span></p>
-                         <p className="font-semibold text-sm">₹{(item.price * item.quantity).toFixed(2)}</p>
-                      </div>
-                      {order.status === 'Delivered' && (
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setSelectedRatingItem({orderId: order.id, item})}
-                            disabled={item.isRated}
-                        >
-                            <Star className="mr-2 h-4 w-4"/>
-                            {item.isRated ? 'Rated' : 'Rate Product'}
-                        </Button>
+                  </CardContent>
+                  <CardFooter className="flex justify-between items-center bg-secondary/30 p-4">
+                    <Badge
+                      variant={
+                        order.status === 'Delivered' ? 'default' :
+                        order.status === 'Cancelled' ? 'destructive' :
+                        'secondary'
+                      }
+                      className={cn(
+                        'capitalize',
+                        order.status === 'Delivered' && 'bg-green-600 text-white',
+                        order.status === 'Pending' && 'bg-yellow-500 text-white',
+                        order.status === 'Shipped' && 'bg-blue-500 text-white'
                       )}
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-              <CardFooter className="flex justify-between items-center bg-secondary/30 p-4">
-                <Badge
-                  variant={
-                    order.status === 'Delivered' ? 'default' :
-                    order.status === 'Cancelled' ? 'destructive' :
-                    'secondary'
-                  }
-                  className={cn(
-                    'capitalize',
-                    order.status === 'Delivered' && 'bg-green-600 text-white',
-                    order.status === 'Pending' && 'bg-yellow-500 text-white',
-                    order.status === 'Shipped' && 'bg-blue-500 text-white'
-                  )}
-                >
-                  {order.status}
-                </Badge>
-              </CardFooter>
+                    >
+                      {order.status}
+                    </Badge>
+                  </CardFooter>
+                </Card>
+              ))}
+            </div>
+          ) : (
+             <Card className="text-center p-12">
+                <Package className="mx-auto h-16 w-16 text-muted-foreground mb-4"/>
+                <h2 className="text-2xl font-semibold mb-2">No orders yet</h2>
+                <p className="text-muted-foreground mb-6">You haven&apos;t placed any orders. Let&apos;s change that!</p>
+                <Button asChild>
+                    <Link href="/">Start Shopping</Link>
+                </Button>
             </Card>
-          ))}
-        </div>
-      ) : (
-         <Card className="text-center p-12">
-            <Package className="mx-auto h-16 w-16 text-muted-foreground mb-4"/>
-            <h2 className="text-2xl font-semibold mb-2">No orders yet</h2>
-            <p className="text-muted-foreground mb-6">You haven&apos;t placed any orders. Let&apos;s change that!</p>
-            <Button asChild>
-                <Link href="/">Start Shopping</Link>
-            </Button>
-        </Card>
-      )}
+          )}
 
-      {selectedRatingItem && (
-        <RatingDialog
-          open={!!selectedRatingItem}
-          onOpenChange={(isOpen) => !isOpen && setSelectedRatingItem(null)}
-          orderId={selectedRatingItem.orderId}
-          item={selectedRatingItem.item}
-          onRatingSubmitted={handleRatingSubmitted}
-        />
-      )}
-    </div>
-  );
+          {selectedRatingItem && (
+            <RatingDialog
+              open={!!selectedRatingItem}
+              onOpenChange={(isOpen) => !isOpen && setSelectedRatingItem(null)}
+              orderId={selectedRatingItem.orderId}
+              item={selectedRatingItem.item}
+              onRatingSubmitted={handleRatingSubmitted}
+            />
+          )}
+        </div>
+      );
+    }
+
+    if (userType === 'farmer') {
+         return (
+             <div className="max-w-4xl mx-auto">
+                 <Card>
+                     <CardHeader>
+                        <CardTitle className="font-headline">Incoming Orders</CardTitle>
+                        <CardDescription>Manage incoming orders from buyers.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                         <div className="space-y-4">
+                            {orders.length > 0 ? (
+                                orders.map(order => (
+                                    <FarmerOrderCard key={order.id} order={order} onUpdateStatus={updateOrderStatus} />
+                                ))
+                            ) : (
+                                 <div className="text-center text-muted-foreground py-8">
+                                    <ShoppingCart className="mx-auto h-12 w-12 mb-4" />
+                                    <h3 className="text-xl font-semibold">No orders yet</h3>
+                                    <p>When a buyer places an order, it will appear here.</p>
+                                </div>
+                            )}
+                        </div>
+                    </CardContent>
+                </Card>
+             </div>
+         )
+    }
+
+    // Fallback for admin or other roles
+    return null;
 }
