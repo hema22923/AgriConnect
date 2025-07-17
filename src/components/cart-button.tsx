@@ -10,6 +10,7 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
+  PopoverClose,
 } from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from './ui/separator';
@@ -83,9 +84,11 @@ export default function CartButton() {
                 <span>Total</span>
                 <span>₹{cartTotal.toFixed(2)}</span>
               </div>
-              <Button asChild className="w-full bg-accent hover:bg-accent/90">
-                <Link href="/checkout">Go to Checkout</Link>
-              </Button>
+               <PopoverClose asChild>
+                <Button asChild className="w-full bg-accent hover:bg-accent/90">
+                  <Link href="/checkout">Go to Checkout</Link>
+                </Button>
+              </PopoverClose>
             </div>
           </>
         ) : (
