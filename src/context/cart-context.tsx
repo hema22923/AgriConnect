@@ -22,19 +22,19 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const { toast } = useToast();
 
   const addToCart = (product: Product, quantity: number = 1) => {
-    if (product.stock <= 0) {
-      toast({
-        title: "Out of Stock",
-        description: `${product.name} is currently unavailable.`,
-        variant: "destructive",
-      });
-      return;
-    }
-
     setCart((prevCart) => {
+      if (product.stock <= 0) {
+        toast({
+          title: "Out of Stock",
+          description: `${product.name} is currently unavailable.`,
+          variant: "destructive",
+        });
+        return prevCart;
+      }
+
       const existingItem = prevCart.find((item) => item.product.id === product.id);
-      
-      const newQuantity = (existingItem ? existingItem.quantity : 0) + quantity;
+      const currentQuantityInCart = existingItem ? existingItem.quantity : 0;
+      const newQuantity = currentQuantityInCart + quantity;
 
       if (newQuantity > product.stock) {
         toast({
@@ -50,12 +50,12 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         }
         return [...prevCart, { product, quantity: product.stock }];
       }
-      
-      toast({
-          title: "Added to cart",
-          description: `${product.name} has been added to your cart.`,
-      });
 
+      toast({
+        title: "Added to cart",
+        description: `${product.name} has been added to your cart.`,
+      });
+      
       if (existingItem) {
         return prevCart.map((item) =>
           item.product.id === product.id
@@ -63,6 +63,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
             : item
         );
       }
+      
       return [...prevCart, { product, quantity }];
     });
   };
