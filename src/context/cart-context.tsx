@@ -39,7 +39,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       if (newQuantity > product.stock) {
         toast({
           title: "Limited Stock",
-          description: `You can only add up to ${product.stock} of ${product.name}.`,
+          description: `You can only add up to ${product.stock} kg of ${product.name}.`,
           variant: "destructive",
         });
         // Adjust quantity to max stock if they try to add more
@@ -88,7 +88,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     if (quantity > itemInCart.product.stock) {
       toast({
           title: "Limited Stock",
-          description: `Only ${itemInCart.product.stock} of ${itemInCart.product.name} available.`,
+          description: `Only ${itemInCart.product.stock} kg of ${itemInCart.product.name} available.`,
           variant: "destructive",
       });
       setCart((prevCart) =>
