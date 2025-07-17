@@ -125,7 +125,7 @@ export default function EditProfilePage() {
                          {userType === 'farmer' && (
                              <div className="space-y-2">
                                 <Label htmlFor="farmDescription">Farm Description</Label>
-                                <Textarea id="farmDescription" name="farmDescription" value={formSate.farmDescription} onChange={handleInputChange} placeholder="Tell us about your farm..." suppressHydrationWarning/>
+                                <Textarea id="farmDescription" name="farmDescription" value={formState.farmDescription} onChange={handleInputChange} placeholder="Tell us about your farm..." suppressHydrationWarning/>
                             </div>
                          )}
 

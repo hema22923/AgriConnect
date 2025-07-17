@@ -2,6 +2,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -19,8 +20,9 @@ import {
   DialogDescription,
   DialogFooter
 } from "@/components/ui/dialog";
+import { useToast } from '@/hooks/use-toast';
 
-function RatingDialog({ open, onOpenChange, orderId, item, onRatingSubmitted }: { open: boolean, onOpenChange: (open: boolean) => void, orderId: string, item: any, onRatingSubmitted: (orderId: string, itemIndex: number) => void }) {
+function RatingDialog({ open, onOpenChange, orderId, item, onRatingSubmitted }: { open: boolean, onOpenChange: (open: boolean) => void, orderId: string, item: any, onRatingSubmitted: (orderId: string, productId: string) => void }) {
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -81,10 +83,9 @@ function RatingDialog({ open, onOpenChange, orderId, item, onRatingSubmitted }: 
   );
 }
 
-import { useToast } from '@/hooks/use-toast';
-
 export default function OrdersPage() {
     const { uid } = useUser();
+    const router = useRouter();
     const [orders, setOrders] = useState<Order[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [selectedRatingItem, setSelectedRatingItem] = useState<{orderId: string, item: any} | null>(null);
@@ -101,7 +102,7 @@ export default function OrdersPage() {
         } else {
           setIsLoading(false);
         }
-    }, [uid]);
+    }, [uid, router]);
 
     const handleRatingSubmitted = (orderId: string, productId: string) => {
         setOrders(prevOrders => 
@@ -152,15 +153,17 @@ export default function OrdersPage() {
                         <p>{item.name} <span className="text-muted-foreground">x {item.quantity} kg</span></p>
                          <p className="font-semibold text-sm">₹{(item.price * item.quantity).toFixed(2)}</p>
                       </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setSelectedRatingItem({orderId: order.id, item})}
-                        disabled={item.isRated}
-                      >
-                        <Star className="mr-2 h-4 w-4"/>
-                        {item.isRated ? 'Rated' : 'Rate Product'}
-                      </Button>
+                      {order.status === 'Delivered' && (
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setSelectedRatingItem({orderId: order.id, item})}
+                            disabled={item.isRated}
+                        >
+                            <Star className="mr-2 h-4 w-4"/>
+                            {item.isRated ? 'Rated' : 'Rate Product'}
+                        </Button>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -176,12 +179,6 @@ export default function OrdersPage() {
                 >
                   {order.status}
                 </Badge>
-                {/* Keeping View Details link in case you want to build a detail page later */}
-                {/* <Button asChild variant="ghost">
-                  <Link href={`/orders/${order.id}`}>
-                    View Details <ChevronRight className="h-4 w-4 ml-1" />
-                  </Link>
-                </Button> */}
               </CardFooter>
             </Card>
           ))}
@@ -203,7 +200,7 @@ export default function OrdersPage() {
           onOpenChange={(isOpen) => !isOpen && setSelectedRatingItem(null)}
           orderId={selectedRatingItem.orderId}
           item={selectedRatingItem.item}
-          onRatingSubmitted={() => handleRatingSubmitted(selectedRatingItem.orderId, selectedRatingItem.item.productId)}
+          onRatingSubmitted={handleRatingSubmitted}
         />
       )}
     </div>
