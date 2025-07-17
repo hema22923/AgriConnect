@@ -4,6 +4,8 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect, useRef } from 'react';
 import type { Product, CartItem } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
+import { useUser } from './user-context';
+import { useRouter } from 'next/navigation';
 
 interface CartContextType {
   cart: CartItem[];
@@ -21,6 +23,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const { toast } = useToast();
   const previousCartRef = useRef<CartItem[]>([]);
+  const { uid } = useUser();
+  const router = useRouter();
 
   useEffect(() => {
     const previousCart = previousCartRef.current;
@@ -31,7 +35,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       toast({
         title: "Removed from cart",
         variant: "destructive",
-        description: `Item has been removed from your cart.`,
+        description: `An item has been removed from your cart.`,
       });
     } else {
       // Check if an item was added or quantity increased
@@ -40,7 +44,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         return !prevItem || currentItem.quantity > (prevItem?.quantity || 0);
       });
 
-      if (itemAddedOrUpdated && previousCart.length > 0) { // Don't toast on initial load
+      if (itemAddedOrUpdated && previousCartRef.current.length > 0) { // Don't toast on initial load
          toast({
           title: "Added to cart",
           description: `${itemAddedOrUpdated.product.name} has been added to your cart.`,
@@ -52,6 +56,16 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   }, [cart, toast]);
 
   const addToCart = (product: Product, quantity: number = 1) => {
+    if (!uid) {
+        toast({
+            title: 'Please Login',
+            description: 'You need to be logged in to add items to your cart.',
+            variant: 'destructive',
+        });
+        router.push('/login');
+        return;
+    }
+
     if (product.stock <= 0) {
       toast({
         title: "Out of Stock",
