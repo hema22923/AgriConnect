@@ -25,21 +25,24 @@ export default function EditProfilePage() {
 
     // Local state for form fields to avoid re-rendering on every keystroke in context
     const [formState, setFormState] = useState({
-        name: userName,
-        address: address || '',
-        city: city || '',
-        zip: zip || '',
+        name: '',
+        address: '',
+        city: '',
+        zip: '',
         farmDescription: ''
     });
 
     useEffect(() => {
-        setFormState({
-            name: userName,
-            address: address || '',
-            city: city || '',
-            zip: zip || '',
-            farmDescription: '' // Assuming this is not stored yet
-        });
+        // Initialize form state once user data is available
+        if (userName !== 'Guest') {
+            setFormState({
+                name: userName,
+                address: address || '',
+                city: city || '',
+                zip: zip || '',
+                farmDescription: '' // Assuming this is not stored yet
+            });
+        }
     }, [userName, address, city, zip]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -122,7 +125,7 @@ export default function EditProfilePage() {
                          {userType === 'farmer' && (
                              <div className="space-y-2">
                                 <Label htmlFor="farmDescription">Farm Description</Label>
-                                <Textarea id="farmDescription" name="farmDescription" value={formState.farmDescription} onChange={handleInputChange} placeholder="Tell us about your farm..." suppressHydrationWarning/>
+                                <Textarea id="farmDescription" name="farmDescription" value={formSate.farmDescription} onChange={handleInputChange} placeholder="Tell us about your farm..." suppressHydrationWarning/>
                             </div>
                          )}
 

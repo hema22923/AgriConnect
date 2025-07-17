@@ -22,16 +22,16 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const { toast } = useToast();
 
   const addToCart = (product: Product, quantity: number = 1) => {
-    setCart((prevCart) => {
-      if (product.stock <= 0) {
-        toast({
-          title: "Out of Stock",
-          description: `${product.name} is currently unavailable.`,
-          variant: "destructive",
-        });
-        return prevCart;
-      }
+    if (product.stock <= 0) {
+      toast({
+        title: "Out of Stock",
+        description: `${product.name} is currently unavailable.`,
+        variant: "destructive",
+      });
+      return;
+    }
 
+    setCart((prevCart) => {
       const existingItem = prevCart.find((item) => item.product.id === product.id);
       const currentQuantityInCart = existingItem ? existingItem.quantity : 0;
       const newQuantity = currentQuantityInCart + quantity;
@@ -42,7 +42,6 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
           description: `You can only add up to ${product.stock} kg of ${product.name}.`,
           variant: "destructive",
         });
-        // Adjust quantity to max stock if they try to add more
         if (existingItem) {
           return prevCart.map(item =>
             item.product.id === product.id ? { ...item, quantity: product.stock } : item
@@ -70,15 +69,15 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   const removeFromCart = (productId: string) => {
     setCart((prevCart) => {
-      const updatedCart = prevCart.filter((item) => item.product.id !== productId);
-      if (updatedCart.length < prevCart.length) {
+      const itemToRemove = prevCart.find((item) => item.product.id === productId);
+      if (itemToRemove) {
         toast({
           title: "Removed from cart",
           variant: "destructive",
           description: `Item has been removed from your cart.`,
         });
       }
-      return updatedCart;
+      return prevCart.filter((item) => item.product.id !== productId);
     });
   };
 
@@ -87,7 +86,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     if (!itemInCart) return;
 
     if (quantity > itemInCart.product.stock) {
-      toast({
+       toast({
           title: "Limited Stock",
           description: `Only ${itemInCart.product.stock} kg of ${itemInCart.product.name} available.`,
           variant: "destructive",
@@ -104,6 +103,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       removeFromCart(productId);
       return;
     }
+
     setCart((prevCart) =>
       prevCart.map((item) =>
         item.product.id === productId ? { ...item, quantity } : item
