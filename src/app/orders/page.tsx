@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from '@/hooks/use-toast';
 import type { Timestamp } from 'firebase/firestore';
+import { useRouter } from 'next/navigation';
 
 // Sub-component for Buyer's rating dialog
 function RatingDialog({ open, onOpenChange, orderId, item, onRatingSubmitted }: { open: boolean, onOpenChange: (open: boolean) => void, orderId: string, item: any, onRatingSubmitted: (orderId: string, productId: string) => void }) {
@@ -172,6 +173,7 @@ export default function OrdersPage() {
     const [orders, setOrders] = useState<Order[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [selectedRatingItem, setSelectedRatingItem] = useState<{orderId: string, item: any} | null>(null);
+    const router = useRouter();
 
     useEffect(() => {
         if (isUserLoading || !uid) {
@@ -201,7 +203,7 @@ export default function OrdersPage() {
                 unsubscribe();
             }
         };
-    }, [uid, userType, isUserLoading]);
+    }, [uid, userType, isUserLoading, router]);
 
 
     const handleRatingSubmitted = (orderId: string, productId: string) => {
@@ -294,11 +296,9 @@ export default function OrdersPage() {
                 <Package className="mx-auto h-16 w-16 text-muted-foreground mb-4"/>
                 <h2 className="text-2xl font-semibold mb-2">No orders yet</h2>
                 <p className="text-muted-foreground mb-6">You haven&apos;t placed any orders. Let&apos;s change that!</p>
-                <Link href="/" legacyBehavior>
-                    <Button asChild>
-                        <a>Start Shopping</a>
-                    </Button>
-                </Link>
+                <Button asChild>
+                    <Link href="/">Start Shopping</Link>
+                </Button>
             </Card>
           )}
 

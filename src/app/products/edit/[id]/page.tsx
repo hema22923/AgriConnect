@@ -153,14 +153,12 @@ export default function EditProductPage() {
     return (
         <div className="max-w-2xl mx-auto">
             <div className="mb-6">
-                <Link href="/profile" legacyBehavior>
-                    <Button asChild variant="ghost" className="mb-4">
-                        <a>
-                            <ArrowLeft className="mr-2 h-4 w-4"/>
-                            Back to Dashboard
-                        </a>
-                    </Button>
-                </Link>
+                <Button asChild variant="ghost" className="mb-4">
+                    <Link href="/profile">
+                        <ArrowLeft className="mr-2 h-4 w-4"/>
+                        Back to Dashboard
+                    </Link>
+                </Button>
                 <div className="flex justify-between items-center">
                     <div>
                         <h1 className="text-3xl font-bold font-headline">Edit Product</h1>

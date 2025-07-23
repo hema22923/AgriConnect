@@ -78,11 +78,9 @@ export default function CartPage() {
                 </div>
               </CardContent>
               <CardFooter>
-                 <Link href="/checkout" legacyBehavior>
-                    <Button asChild className="w-full h-12 text-lg bg-accent hover:bg-accent/90">
-                        <a>Proceed to Checkout</a>
-                    </Button>
-                 </Link>
+                 <Button asChild className="w-full h-12 text-lg bg-accent hover:bg-accent/90">
+                    <Link href="/checkout">Proceed to Checkout</Link>
+                 </Button>
               </CardFooter>
             </Card>
           </div>
@@ -92,11 +90,9 @@ export default function CartPage() {
             <ShoppingCart className="mx-auto h-16 w-16 text-muted-foreground mb-4"/>
           <h2 className="text-2xl font-semibold mb-2">Your cart is empty</h2>
           <p className="text-muted-foreground mb-6">Looks like you haven&apos;t added anything to your cart yet.</p>
-          <Link href="/" legacyBehavior>
-            <Button asChild>
-                <a>Start Shopping</a>
-            </Button>
-          </Link>
+          <Button asChild>
+            <Link href="/">Start Shopping</Link>
+          </Button>
         </Card>
       )}
     </div>

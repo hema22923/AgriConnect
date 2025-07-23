@@ -98,22 +98,18 @@ export default function Header() {
               <Skeleton className="h-10 w-10 rounded-full" />
            ) : userName === 'Guest' ? (
              <div className="hidden md:flex items-center gap-2">
-                <Link href="/login" legacyBehavior>
-                    <Button asChild variant="ghost">
-                        <a>
-                            <LogIn className="mr-2 h-4 w-4" />
-                            Login
-                        </a>
-                    </Button>
-                </Link>
-                <Link href="/register" legacyBehavior>
-                    <Button asChild>
-                        <a>
-                            <UserPlus className="mr-2 h-4 w-4" />
-                            Sign Up
-                        </a>
-                    </Button>
-                </Link>
+                <Button asChild variant="ghost">
+                    <Link href="/login">
+                        <LogIn className="mr-2 h-4 w-4" />
+                        Login
+                    </Link>
+                </Button>
+                <Button asChild>
+                    <Link href="/register">
+                        <UserPlus className="mr-2 h-4 w-4" />
+                        Sign Up
+                    </Link>
+                </Button>
              </div>
            ) : (
              <div className="flex items-center gap-4">

@@ -15,6 +15,7 @@ import { doc, updateDoc, increment, collection, addDoc, serverTimestamp, writeBa
 import { useUser } from '@/context/user-context';
 import { updateUser } from '@/lib/data';
 import type { OrderItem } from '@/lib/types';
+import Link from 'next/link';
 
 export default function CheckoutPage() {
   const { cart, cartTotal, clearCart } = useCart();

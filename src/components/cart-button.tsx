@@ -85,11 +85,9 @@ export default function CartButton() {
                 <span>₹{cartTotal.toFixed(2)}</span>
               </div>
                <PopoverClose asChild>
-                 <Link href="/checkout" legacyBehavior>
-                    <Button asChild className="w-full bg-accent hover:bg-accent/90">
-                      <a>Go to Checkout</a>
+                 <Button asChild className="w-full bg-accent hover:bg-accent/90">
+                      <Link href="/checkout">Go to Checkout</Link>
                     </Button>
-                  </Link>
               </PopoverClose>
             </div>
           </>
