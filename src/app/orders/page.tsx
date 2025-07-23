@@ -294,9 +294,11 @@ export default function OrdersPage() {
                 <Package className="mx-auto h-16 w-16 text-muted-foreground mb-4"/>
                 <h2 className="text-2xl font-semibold mb-2">No orders yet</h2>
                 <p className="text-muted-foreground mb-6">You haven&apos;t placed any orders. Let&apos;s change that!</p>
-                <Button asChild>
-                    <Link href="/">Start Shopping</Link>
-                </Button>
+                <Link href="/" legacyBehavior>
+                    <Button asChild>
+                        <a>Start Shopping</a>
+                    </Button>
+                </Link>
             </Card>
           )}
 

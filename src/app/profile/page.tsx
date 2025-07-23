@@ -102,12 +102,14 @@ export default function ProfilePage() {
                     </div>
                 </div>
                 <div className="flex items-center gap-2">
-                    <Button asChild variant="outline">
-                        <Link href="/profile/edit">
-                            <Edit className="mr-2 h-4 w-4"/>
-                            Edit Profile
-                        </Link>
-                    </Button>
+                    <Link href="/profile/edit" legacyBehavior>
+                        <Button asChild variant="outline">
+                            <a>
+                                <Edit className="mr-2 h-4 w-4"/>
+                                Edit Profile
+                            </a>
+                        </Button>
+                    </Link>
                 </div>
             </div>
 
@@ -167,12 +169,14 @@ export default function ProfilePage() {
                             <CardTitle className="font-headline">Your Products</CardTitle>
                             <CardDescription>You have {farmerProducts.length} product(s) listed.</CardDescription>
                         </div>
-                         <Button asChild>
-                            <Link href="/products/new">
-                                <PlusCircle className="mr-2 h-4 w-4"/>
-                                Add New Product
-                            </Link>
-                        </Button>
+                        <Link href="/products/new" legacyBehavior>
+                            <Button asChild>
+                                <a>
+                                    <PlusCircle className="mr-2 h-4 w-4"/>
+                                    Add New Product
+                                </a>
+                            </Button>
+                        </Link>
                     </div>
                 </CardHeader>
                 <CardContent>
@@ -201,9 +205,11 @@ export default function ProfilePage() {
                                             <Badge variant="destructive" className="text-xs">Out of Stock</Badge>
                                         )}
                                     </div>
-                                    <Button asChild variant="outline" size="sm">
-                                        <Link href={`/products/edit/${product.id}`}>Edit</Link>
-                                    </Button>
+                                    <Link href={`/products/edit/${product.id}`} legacyBehavior>
+                                        <Button asChild variant="outline" size="sm">
+                                            <a>Edit</a>
+                                        </Button>
+                                    </Link>
                                 </div>
                             ))
                         ) : (

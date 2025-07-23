@@ -98,18 +98,22 @@ export default function Header() {
               <Skeleton className="h-10 w-10 rounded-full" />
            ) : userName === 'Guest' ? (
              <div className="hidden md:flex items-center gap-2">
-                <Button asChild variant="ghost">
-                    <Link href="/login">
-                        <LogIn className="mr-2 h-4 w-4" />
-                        Login
-                    </Link>
-                </Button>
-                <Button asChild>
-                    <Link href="/register">
-                         <UserPlus className="mr-2 h-4 w-4" />
-                        Sign Up
-                    </Link>
-                </Button>
+                <Link href="/login" legacyBehavior>
+                    <Button asChild variant="ghost">
+                        <a>
+                            <LogIn className="mr-2 h-4 w-4" />
+                            Login
+                        </a>
+                    </Button>
+                </Link>
+                <Link href="/register" legacyBehavior>
+                    <Button asChild>
+                        <a>
+                            <UserPlus className="mr-2 h-4 w-4" />
+                            Sign Up
+                        </a>
+                    </Button>
+                </Link>
              </div>
            ) : (
              <div className="flex items-center gap-4">
@@ -153,10 +157,10 @@ export default function Header() {
               <SheetContent side="right">
                 <div className="grid gap-4 py-6">
                   <Link href="/" className="flex items-center gap-2 mb-4">
-                    <Leaf className="h-7 w-7 text-primary" />
-                    <span className="text-xl font-bold font-headline text-primary tracking-wide">
+                      <Leaf className="h-7 w-7 text-primary" />
+                      <span className="text-xl font-bold font-headline text-primary tracking-wide">
                       AgriConnect
-                    </span>
+                      </span>
                   </Link>
                   {navLinks.map((link) => (
                     <Link
