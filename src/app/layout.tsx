@@ -2,11 +2,10 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { cn } from '@/lib/utils';
 import { Toaster } from '@/components/ui/toaster';
-import { CartProvider } from '@/context/cart-context';
 import Header from '@/components/header';
 import Footer from '@/components/footer';
 import AiChatbot from '@/components/ai-chatbot';
-import { UserProvider } from '@/context/user-context';
+import { Providers } from './providers';
 
 export const metadata: Metadata = {
   title: 'AgriConnect',
@@ -27,8 +26,7 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet" />
       </head>
       <body className={cn('font-body antialiased min-h-screen flex flex-col')}>
-        <UserProvider>
-          <CartProvider>
+        <Providers>
             <Header />
             <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8">
               {children}
@@ -36,8 +34,7 @@ export default function RootLayout({
             <Footer />
             <AiChatbot />
             <Toaster />
-          </CartProvider>
-        </UserProvider>
+        </Providers>
       </body>
     </html>
   );
