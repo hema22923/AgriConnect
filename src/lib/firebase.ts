@@ -6,13 +6,14 @@ import { getAuth } from "firebase/auth";
 // https://firebase.google.com/docs/web/setup#available-libraries
 
 // Your web app's Firebase configuration
+// This is now hardcoded to ensure it loads correctly in your local environment.
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
+  apiKey: "AIzaSyBYaYhnb6gpEnF-DJ6u2wEA_iIe9JXcYCU",
+  authDomain: "agriconnect-eumdr.firebaseapp.com",
+  projectId: "agriconnect-eumdr",
+  storageBucket: "agriconnect-eumdr.firebasestorage.app",
+  messagingSenderId: "1023481600775",
+  appId: "1:1023481600775:web:f622460e455fdeb3fb03a2"
 };
 
 // Initialize Firebase
